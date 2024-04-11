@@ -11,52 +11,30 @@
     <a asp-action="Create">Create New</a>
 </p>
 
-@using (Html.BeginForm())
-{
-    <p>
-        Find by name: @Html.TextBox("SearchString")
-        <input type="submit" value="Search "/>
-    </p>
-}
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Find by name: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+            <input type="submit" value="Search" class="btn btn-default" /> | 
+            <a asp-action="Index">Back to Full List</a>
+        </p>
+    </div>
+</form>
 
 <table class="table">
     <thead>
     <tr>
         <th>
-            @Html.ActionLink(
-                @Html.DisplayNameFor(model => model.Name),
-                "Index", new
-                {
-                    sortOrder = ViewBag.NameSortParm
-                }
-            )
+            <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]">@Html.DisplayNameFor(model => model.Name)</a>
         </th>
         <th>
-            @Html.ActionLink(
-                @Html.DisplayNameFor(model => model.IsActive),
-                "Index", new
-                {
-                    sortOrder = ViewBag.ActiveSortParm
-                }
-            )
+            <a asp-action="Index" asp-route-sortOrder="@ViewData["ActiveSortParm"]">@Html.DisplayNameFor(model => model.IsActive)</a>
         </th>
         <th>
-            @Html.ActionLink(
-                @Html.DisplayNameFor(model => model.DateAdded),
-                "Index", new
-                {
-                    sortOrder = ViewBag.DateSortParm
-                }
-            )
+            <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]">@Html.DisplayNameFor(model => model.DateAdded)</a>
         </th>
         <th>
-            @Html.ActionLink(
-                @Html.DisplayNameFor(model => model.Price),
-                "Index", new
-                {
-                    sortOrder = ViewBag.PriceSortParm
-                }
-            )
+            <a asp-action="Index" asp-route-sortOrder="@ViewData["PriceSortParm"]">@Html.DisplayNameFor(model => model.Price)</a>
         </th>
         <th></th>
     </tr>

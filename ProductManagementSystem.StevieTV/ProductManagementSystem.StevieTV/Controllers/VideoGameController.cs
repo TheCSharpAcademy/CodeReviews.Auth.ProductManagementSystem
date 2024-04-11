@@ -19,49 +19,50 @@ namespace ProductManagementSystem.StevieTV.Controllers
         // {
         //     return View(await _context.VideoGames.ToListAsync());
         // }
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, int? pageNumber)
         {
-            ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            ViewBag.DateSortParm = sortOrder == "date" ? "date_desc" : "date";
-            ViewBag.ActiveSortParm = sortOrder == "active" ? "active_desc" : "active";
-            ViewBag.PriceSortParm = sortOrder == "price" ? "price_desc" : "price";
+            ViewData["NameSortParm"]= String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["DateSortParm"]= sortOrder == "date" ? "date_desc" : "date";
+            ViewData["ActiveSortParm"] = sortOrder == "active" ? "active_desc" : "active";
+            ViewData["PriceSortParm"] = sortOrder == "price" ? "price_desc" : "price";
+            ViewData["CurrentFilter"] = searchString;
 
-            var videoGames = await _context.VideoGames.ToListAsync();
+            var videoGames = from v in _context.VideoGames select v;
 
             switch (sortOrder)
             {
                 case "name_desc":
-                    videoGames = videoGames.OrderByDescending(v => v.Name).ToList();
+                    videoGames = videoGames.OrderByDescending(v => v.Name);
                     break;
                 case  "date":
-                    videoGames = videoGames.OrderBy(v => v.DateAdded).ToList();
+                    videoGames = videoGames.OrderBy(v => v.DateAdded);
                     break;
                 case "date_desc":
-                    videoGames = videoGames.OrderByDescending(v => v.DateAdded).ToList();
+                    videoGames = videoGames.OrderByDescending(v => v.DateAdded);
                     break;
                 case  "active":
-                    videoGames = videoGames.OrderBy(v => v.IsActive).ToList();
+                    videoGames = videoGames.OrderBy(v => v.IsActive);
                     break;
                 case "active_desc":
-                    videoGames = videoGames.OrderByDescending(v => v.IsActive).ToList();
+                    videoGames = videoGames.OrderByDescending(v => v.IsActive);
                     break;
                 case  "price":
-                    videoGames = videoGames.OrderBy(v => v.Price).ToList();
+                    videoGames = videoGames.OrderBy(v => v.Price);
                     break;
                 case "price_desc":
-                    videoGames = videoGames.OrderByDescending(v => v.Price).ToList();
+                    videoGames = videoGames.OrderByDescending(v => v.Price);
                     break;
                 default:
-                    videoGames = videoGames.OrderBy(v => v.Name).ToList();
+                    videoGames = videoGames.OrderBy(v => v.Name);
                     break;
             }
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                videoGames = videoGames.Where(v => v.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
+                videoGames = videoGames.Where(v => v.Name.Contains(searchString));
             }
 
-            return View(videoGames);
+            return View(await videoGames.AsNoTracking().ToListAsync());
         }
 
         // GET: VideoGame/Details/5
