@@ -19,7 +19,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         // {
         //     return View(await _context.VideoGames.ToListAsync());
         // }
-        public async Task<IActionResult> Index(string sortOrder)
+        public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
             ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewBag.DateSortParm = sortOrder == "date" ? "date_desc" : "date";
@@ -54,6 +54,11 @@ namespace ProductManagementSystem.StevieTV.Controllers
                 default:
                     videoGames = videoGames.OrderBy(v => v.Name).ToList();
                     break;
+            }
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                videoGames = videoGames.Where(v => v.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             return View(videoGames);
