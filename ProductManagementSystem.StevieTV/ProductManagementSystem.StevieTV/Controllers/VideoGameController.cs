@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductManagementSystem.StevieTV.Data;
+using ProductManagementSystem.StevieTV.Helpers;
 using ProductManagementSystem.StevieTV.Models;
 
 namespace ProductManagementSystem.StevieTV.Controllers
@@ -25,9 +26,25 @@ namespace ProductManagementSystem.StevieTV.Controllers
             ViewData["DateSortParm"]= sortOrder == "date" ? "date_desc" : "date";
             ViewData["ActiveSortParm"] = sortOrder == "active" ? "active_desc" : "active";
             ViewData["PriceSortParm"] = sortOrder == "price" ? "price_desc" : "price";
-            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentSort"] = sortOrder;
 
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+            
+            ViewData["CurrentFilter"] = searchString;
+            
             var videoGames = from v in _context.VideoGames select v;
+            
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                videoGames = videoGames.Where(v => v.Name.Contains(searchString));
+            }
 
             switch (sortOrder)
             {
@@ -57,12 +74,8 @@ namespace ProductManagementSystem.StevieTV.Controllers
                     break;
             }
 
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                videoGames = videoGames.Where(v => v.Name.Contains(searchString));
-            }
-
-            return View(await videoGames.AsNoTracking().ToListAsync());
+            var pageSize = 5;
+            return View(await PaginatedList<VideoGame>.CreateAsync(videoGames.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: VideoGame/Details/5
