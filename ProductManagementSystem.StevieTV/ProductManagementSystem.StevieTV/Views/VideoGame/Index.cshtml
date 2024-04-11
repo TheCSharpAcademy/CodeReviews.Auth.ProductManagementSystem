@@ -1,0 +1,79 @@
+﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@model IEnumerable<ProductManagementSystem.StevieTV.Models.VideoGame>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+    <tr>
+        <th>
+            @Html.ActionLink(
+                @Html.DisplayNameFor(model => model.Name),
+                "Index", new
+                {
+                    sortOrder = ViewBag.NameSortParm
+                }
+            )
+        </th>
+        <th>
+            @Html.ActionLink(
+                @Html.DisplayNameFor(model => model.IsActive),
+                "Index", new
+                {
+                    sortOrder = ViewBag.ActiveSortParm
+                }
+            )
+        </th>
+        <th>
+            @Html.ActionLink(
+                @Html.DisplayNameFor(model => model.DateAdded),
+                "Index", new
+                {
+                    sortOrder = ViewBag.DateSortParm
+                }
+            )
+        </th>
+        <th>
+            @Html.ActionLink(
+                @Html.DisplayNameFor(model => model.Price),
+                "Index", new
+                {
+                    sortOrder = ViewBag.PriceSortParm
+                }
+            )
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsActive)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateAdded)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
