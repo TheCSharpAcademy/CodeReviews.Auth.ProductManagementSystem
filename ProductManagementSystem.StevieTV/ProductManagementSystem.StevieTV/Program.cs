@@ -40,6 +40,8 @@ if (app.Environment.IsDevelopment())
     scope.ServiceProvider.GetRequiredService<VideoGameContext>().Database.EnsureCreated();
     scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.EnsureCreated();
     await SeedDatabase.AddDefaultRoles(scope);
+    await SeedDatabase.AddDefaultUsers(scope);
+    await SeedDatabase.AddDefaultProducts(scope);
 }
 else
 {
