@@ -17,10 +17,6 @@ namespace ProductManagementSystem.StevieTV.Controllers
         }
 
         // GET: VideoGame
-        // public async Task<IActionResult> Index()
-        // {
-        //     return View(await _context.VideoGames.ToListAsync());
-        // }
         public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, int? pageNumber)
         {
             ViewData["NameSortParm"]= String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
