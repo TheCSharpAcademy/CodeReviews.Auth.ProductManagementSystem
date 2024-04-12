@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductManagementSystem.StevieTV.Data;
 using ProductManagementSystem.StevieTV.Helpers;
@@ -97,6 +98,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         }
 
         // GET: VideoGame/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -107,6 +109,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create([Bind("Id,Name,IsActive,DateAdded,Price")] VideoGame videoGame)
         {
             if (ModelState.IsValid)
@@ -119,6 +122,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         }
 
         // GET: VideoGame/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -139,6 +143,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,IsActive,DateAdded,Price")] VideoGame videoGame)
         {
             if (id != videoGame.Id)
@@ -170,6 +175,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         }
 
         // GET: VideoGame/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -190,6 +196,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         // POST: VideoGame/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var videoGame = await _context.VideoGames.FindAsync(id);
