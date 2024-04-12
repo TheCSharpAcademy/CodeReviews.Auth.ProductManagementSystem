@@ -10,10 +10,12 @@ namespace ProductManagementSystem.StevieTV.Controllers
     public class VideoGameController : Controller
     {
         private readonly VideoGameContext _context;
+        private readonly ILogger _logger;
 
-        public VideoGameController(VideoGameContext context)
+        public VideoGameController(VideoGameContext context, ILogger logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: VideoGame
@@ -80,6 +82,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         {
             if (id == null)
             {
+                _logger.LogWarning($"No VideoGame id provided when getting details");
                 return NotFound();
             }
 
@@ -87,6 +90,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (videoGame == null)
             {
+                _logger.LogError($"VideoGame with Id '{id}' not found when getting details");
                 return NotFound();
             }
 
@@ -123,12 +127,14 @@ namespace ProductManagementSystem.StevieTV.Controllers
         {
             if (id == null)
             {
+                _logger.LogWarning($"No VideoGame id provided when getting trying to edit");
                 return NotFound();
             }
 
             var videoGame = await _context.VideoGames.FindAsync(id);
             if (videoGame == null)
             {
+                _logger.LogError($"VideoGame with Id '{id}' not found when trying to edit");
                 return NotFound();
             }
             return View(videoGame);
@@ -144,6 +150,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
         {
             if (id != videoGame.Id)
             {
+                _logger.LogError($"VideoGame id '{id}' does not match the one you are trying to edit");
                 return NotFound();
             }
 
@@ -158,6 +165,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
                 {
                     if (!VideoGameExists(videoGame.Id))
                     {
+                        _logger.LogError($"Error trying to edit the video game, id {id} does not exist");
                         return NotFound();
                     }
                     else
@@ -176,6 +184,8 @@ namespace ProductManagementSystem.StevieTV.Controllers
         {
             if (id == null)
             {
+                _logger.LogWarning($"No VideoGame id provided when trying to delete");
+
                 return NotFound();
             }
 
@@ -183,6 +193,7 @@ namespace ProductManagementSystem.StevieTV.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (videoGame == null)
             {
+                _logger.LogError($"VideoGame with Id '{id}' not found when trying to delete");
                 return NotFound();
             }
 

@@ -22,6 +22,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddTransient<IEmailSender, EmailService>();
+builder.Services.AddScoped<ILogger, CustomLogger>();
 
 builder.Services.AddAuthorization(options =>
 {
