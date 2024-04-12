@@ -17,10 +17,17 @@ builder.Services.AddDbContext<VideoGameContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddTransient<IEmailSender, EmailService>();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("Staff", policy => policy.RequireRole("Staff","Admin"));
+});
 
 var app = builder.Build();
 
@@ -32,6 +39,7 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     scope.ServiceProvider.GetRequiredService<VideoGameContext>().Database.EnsureCreated();
     scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.EnsureCreated();
+    await SeedDatabase.AddDefaultRoles(scope);
 }
 else
 {

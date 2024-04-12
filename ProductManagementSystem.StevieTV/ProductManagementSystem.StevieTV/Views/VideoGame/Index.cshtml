@@ -1,5 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.AspNetCore.Identity
 @model ProductManagementSystem.StevieTV.Helpers.PaginatedList<VideoGame>
+
+@inject SignInManager<IdentityUser> SignInManager
 
 @{
     ViewData["Title"] = "Index";
@@ -56,9 +59,21 @@
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                @if(SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Staff")))
+                {
+                    <span>
+                    |
+                    <a asp-action = "Edit" asp-route-id = "@item.Id">Edit</a>
+                    </span>
+                }
+                @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                {
+                    <span>
+                        |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </span>
+                }
             </td>
         </tr>
     }
