@@ -8,35 +8,40 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Video Games Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Staff")))
+    {
+        <a class="btn btn-success" asp-action="Create">Create New</a>
+    }
 </p>
 
 <form asp-action="Index" method="get">
-    <div class="form-actions no-color">
-        <p>
-            Find by name: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-            <input type="submit" value="Search" class="btn btn-default" /> | 
-            <a asp-action="Index">Back to Full List</a>
-        </p>
+    <div class="input-group mb-3">
+        <span class="input-group-text" id="SearchLabel">Find by name:</span>
+        <input type="text" class="form-control" name="SearchString" value="@ViewData["CurrentFilter"]"/>
+        <input type="submit" value="Search" class="btn btn-primary"/>
+        @if (@ViewData["CurrentFilter"] != null)
+        {
+            <a class="btn btn-primary" asp-action="Index">Back to Full List</a>
+        }
     </div>
 </form>
 
-<table class="table">
+<table class="table table-striped">
     <thead>
     <tr>
-        <th>
+        <th scope="col">
             <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]">@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</a>
         </th>
-        <th>
+        <th scope="col">
             <a asp-action="Index" asp-route-sortOrder="@ViewData["ActiveSortParm"]">@Html.DisplayNameFor(model => model.FirstOrDefault().IsActive)</a>
         </th>
-        <th>
+        <th scope="col">
             <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]">@Html.DisplayNameFor(model => model.FirstOrDefault().DateAdded)</a>
         </th>
-        <th>
+        <th scope="col">
             <a asp-action="Index" asp-route-sortOrder="@ViewData["PriceSortParm"]">@Html.DisplayNameFor(model => model.FirstOrDefault().Price)</a>
         </th>
         <th></th>
@@ -59,21 +64,17 @@
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                @if(SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Staff")))
+                <div class="btn-group">
+                <a class="btn btn-primary" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Staff")))
                 {
-                    <span>
-                    |
-                    <a asp-action = "Edit" asp-route-id = "@item.Id">Edit</a>
-                    </span>
+                    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
                 }
                 @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
                 {
-                    <span>
-                        |
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </span>
+                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                 }
+                </div>
             </td>
         </tr>
     }
@@ -84,18 +85,19 @@
     var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
     var nextDisabled = !Model.HasNextPage ? "disabled" : "";
 }
-
+<div class="btn-group">
 <a asp-action="Index"
    asp-route-sortOrder="@ViewData["CurrentSort"]"
    asp-route-pageNumber="@(Model.PageIndex - 1)"
    asp-route-currentFilter="@ViewData["CurrentFilter"]"
-   class="btn btn-default @prevDisabled">
+   class="btn btn-outline-secondary @prevDisabled">
     Previous
 </a>
 <a asp-action="Index"
    asp-route-sortOrder="@ViewData["CurrentSort"]"
    asp-route-pageNumber="@(Model.PageIndex + 1)"
    asp-route-currentFilter="@ViewData["CurrentFilter"]"
-   class="btn btn-default @nextDisabled">
+   class="btn btn-outline-secondary @nextDisabled">
     Next
 </a>
+</div>
