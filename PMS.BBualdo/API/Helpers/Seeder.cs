@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Data.Helpers;
 
-public class Seeder(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+public class Seeder(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
 {
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly UserManager<User> _userManager = userManager;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task SeedRolesAsync()
     {
@@ -18,8 +19,9 @@ public class Seeder(UserManager<User> userManager, RoleManager<IdentityRole> rol
 
     public async Task CreateAdminAsync()
     {
-        const string email = "admin@admin.com";
-        const string password = "Admin123!";
+        var adminSection = _configuration.GetSection("Admin");
+        var email = adminSection.GetValue<string>("AdminEmail");
+        var password = adminSection.GetValue<string>("AdminPassword");
 
         if (await _userManager.FindByEmailAsync(email) == null)
         {
