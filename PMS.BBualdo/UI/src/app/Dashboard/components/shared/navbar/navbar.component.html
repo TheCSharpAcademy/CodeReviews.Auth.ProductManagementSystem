@@ -1,0 +1,17 @@
+<div class="navbar justify-between flex items-center">
+  <app-title fontSize="text-lg" />
+  <div class="flex items-center gap-4">
+    <div class="flex flex-col items-center text-sm">
+      <p>Logged in as:</p>
+      <p class="font-bold text-royal-blue">
+        {{ currentUser?.email }}
+      </p>
+    </div>
+    <button (click)="logout()" class="group h-6 w-6">
+      <mat-icon
+        class="text-white/50 transition-all duration-200 group-hover:text-white"
+      >logout</mat-icon
+      >
+    </button>
+  </div>
+</div>

@@ -1,0 +1,139 @@
+<div
+  class="fixed left-0 top-0 flex h-full w-full items-center justify-center bg-black/50"
+>
+  <div
+    class="fixed flex w-1/4 flex-col items-center gap-4 border-4 border-royal-blue bg-black p-4"
+  >
+    <div
+      class="flex w-full items-center justify-between border-b border-royal-blue/50 py-2"
+    >
+      <p class="text-xl font-bold uppercase text-white">{{ title }}</p>
+      <button
+        (click)="close()"
+        class="text-white transition-all duration-200 hover:text-red-600"
+      >
+        <mat-icon fontIcon="close" />
+      </button>
+    </div>
+    <form
+      (ngSubmit)="generateUser()"
+      [formGroup]="userForm"
+      class="flex w-full flex-col items-center gap-6"
+    >
+      <div class="form-field">
+        <label for="firstName">First name</label>
+        <input
+          id="firstName"
+          type="text"
+          class="input w-full"
+          autocomplete="off"
+          minlength="2"
+          maxlength="50"
+          required
+          formControlName="firstName"
+          [ngClass]="{
+            'input-error':
+              userForm.controls['firstName'].touched &&
+              userForm.controls['firstName'].errors,
+          }"
+        />
+
+        @if (
+          userForm.controls["firstName"].touched &&
+          userForm.controls["firstName"].errors
+        ) {
+          <div>
+            @if (userForm.controls["firstName"].errors!["required"]) {
+              <p class="text-sm text-red-600">Required field</p>
+            }
+            @if (
+              userForm.controls["firstName"].errors!["minlength"] ||
+              userForm.controls["firstName"].errors!["maxlength"]
+            ) {
+              <p class="text-sm text-red-600">
+                Must be between 2 and 50 characters
+              </p>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="lastName">Last name</label>
+        <input
+          id="lastName"
+          type="text"
+          class="input w-full"
+          autocomplete="off"
+          minlength="2"
+          maxlength="50"
+          required
+          formControlName="lastName"
+          [ngClass]="{
+            'input-error':
+              userForm.controls['lastName'].touched &&
+              userForm.controls['lastName'].errors,
+          }"
+        />
+
+        @if (
+          userForm.controls["lastName"].touched &&
+          userForm.controls["lastName"].errors
+        ) {
+          <div>
+            @if (userForm.controls["lastName"].errors!["required"]) {
+              <p class="text-sm text-red-600">Required field</p>
+            }
+            @if (
+              userForm.controls["lastName"].errors!["minlength"] ||
+              userForm.controls["lastName"].errors!["maxlength"]
+            ) {
+              <p class="text-sm text-red-600">
+                Must be between 2 and 50 characters
+              </p>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          class="input w-full"
+          autocomplete="off"
+          minlength="2"
+          maxlength="50"
+          required
+          formControlName="email"
+          [ngClass]="{
+            'input-error':
+              userForm.controls['email'].touched &&
+              userForm.controls['email'].errors,
+          }"
+        />
+
+        @if (
+          userForm.controls["email"].touched &&
+          userForm.controls["email"].errors
+        ) {
+          <div>
+            @if (userForm.controls["email"].errors!["required"]) {
+              <p class="text-sm text-red-600">Required field</p>
+            }
+            @if (userForm.controls["email"].errors!["invalidEmail"]) {
+              <p class="text-sm text-red-600">Invalid email</p>
+            }
+          </div>
+        }
+      </div>
+      <div class="flex items-center gap-6">
+        <button (click)="close()" type="button" class="btn secondary-btn">
+          Cancel
+        </button>
+        <button class="btn primary-btn">{{ title }}</button>
+      </div>
+    </form>
+  </div>
+</div>

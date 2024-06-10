@@ -1,0 +1,45 @@
+<table class="w-[1000px] border text-white">
+  <tbody>
+  <tr class="border border-dark-slate-gray bg-dark-slate-gray">
+    <td class="table-td">First Name</td>
+    <td class="table-td">Last Name</td>
+    <td class="table-td">Email Address</td>
+    <td class="table-td">Email Confirmed</td>
+    <td class="table-td"></td>
+  </tr>
+    @if (paginatedUsers) {
+      @for (user of paginatedUsers.users; track $index) {
+        <tr class="border">
+          <td class="table-td text-xl">{{ user.firstName }}</td>
+          <td class="table-td text-xl">{{ user.lastName }}</td>
+          <td class="table-td text-xl">
+            {{ user.email }}
+          </td>
+          <td class="flex h-[50px] items-center justify-center">
+            @if (user.emailConfirmed) {
+              <mat-icon class="text-green-400">check_circle</mat-icon>
+            } @else {
+              <mat-icon class="text-orange-400">cancel</mat-icon>
+            }
+          </td>
+          <td class="border px-4 py-2">
+            <div class="flex items-center justify-center gap-6">
+              <button
+                (click)="updateUser(user)"
+                class="flex h-8 w-8 items-center justify-center rounded-lg border border-royal-blue text-royal-blue transition-all duration-200 hover:bg-royal-blue-hover hover:text-white"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                (click)="deleteUser(user)"
+                class="flex h-8 w-8 items-center justify-center rounded-lg border border-red-600 text-red-600 transition-all duration-200 hover:bg-red-600/50 hover:text-white"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      }
+    }
+  </tbody>
+</table>
