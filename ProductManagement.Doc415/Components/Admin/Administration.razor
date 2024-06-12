@@ -1,5 +1,6 @@
 ﻿@page "/administration"
 @using ProductManagement.Data
+@using ProductManagement.Models
 @using ProductManagement.Services
 @inject UserService _userService
 
@@ -11,13 +12,19 @@
     <Microsoft.FluentUI.AspNetCore.Components.TemplateColumn Sortable="true" SortBy="@sortByName" Title="Name">
         <div class="flex items-center">
             <strong>@context.Email</strong>
-            <strong>@context.PhoneNumber</strong>
+            
+        </div>
+    </Microsoft.FluentUI.AspNetCore.Components.TemplateColumn>
+    <Microsoft.FluentUI.AspNetCore.Components.TemplateColumn Sortable="true"  Title="Role">
+        <div class="flex items-center">
+            <strong>@context.Role</strong>
+
         </div>
     </Microsoft.FluentUI.AspNetCore.Components.TemplateColumn>
     <Microsoft.FluentUI.AspNetCore.Components.TemplateColumn Title="Management">
         <div class="flex items-right">
-            <FluentButton Appearance="Appearance.Accent" @onclick="@(() => UpdateUser(context))">Update</FluentButton>
-            <FluentButton Appearance="Appearance.Accent" @onclick="@(() => DeleteUser(context))">Delete</FluentButton>
+            <FluentButton Appearance="Appearance.Accent" @onclick="@(() => UpdateUser(context.Id))">Update</FluentButton>
+            <FluentButton Appearance="Appearance.Accent" @onclick="@(() => DeleteUser(context.Id))">Delete</FluentButton>
         </div>
     </Microsoft.FluentUI.AspNetCore.Components.TemplateColumn>
     
@@ -26,10 +33,10 @@
 </FluentDataGrid>
 
 @code {
-    IQueryable<ApplicationUser>? UserList;
-    IQueryable<ApplicationUser>? Users;
-    GridSort<ApplicationUser> sortByName = GridSort<ApplicationUser>
-       .ByAscending(p => p.UserName);
+    IQueryable<UserViewModel>? UserList;
+    IQueryable<UserViewModel>? Users;
+    GridSort<UserViewModel> sortByName = GridSort<UserViewModel>
+       .ByAscending(p => p.Email);
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,13 +44,15 @@
         Users = UserList;
     }
 
-    private async Task UpdateUser(ApplicationUser user)
-    {
-        
-    }
-    private async Task DeleteUser(ApplicationUser user)
+    private async Task UpdateUser(string Id)
     {
 
     }
+    private async Task DeleteUser(string Id)
+    {
+
+    }
+
+    
 
 }
