@@ -1,0 +1,49 @@
+﻿@page "/administration"
+@using ProductManagement.Data
+@using ProductManagement.Services
+@inject UserService _userService
+
+<h3>administration</h3>
+
+
+<FluentDataGrid Items="@UserList" style="width: 900px;">
+
+    <Microsoft.FluentUI.AspNetCore.Components.TemplateColumn Sortable="true" SortBy="@sortByName" Title="Name">
+        <div class="flex items-center">
+            <strong>@context.Email</strong>
+            <strong>@context.PhoneNumber</strong>
+        </div>
+    </Microsoft.FluentUI.AspNetCore.Components.TemplateColumn>
+    <Microsoft.FluentUI.AspNetCore.Components.TemplateColumn Title="Management">
+        <div class="flex items-right">
+            <FluentButton Appearance="Appearance.Accent" @onclick="@(() => UpdateUser(context))">Update</FluentButton>
+            <FluentButton Appearance="Appearance.Accent" @onclick="@(() => DeleteUser(context))">Delete</FluentButton>
+        </div>
+    </Microsoft.FluentUI.AspNetCore.Components.TemplateColumn>
+    
+
+
+</FluentDataGrid>
+
+@code {
+    IQueryable<ApplicationUser>? UserList;
+    IQueryable<ApplicationUser>? Users;
+    GridSort<ApplicationUser> sortByName = GridSort<ApplicationUser>
+       .ByAscending(p => p.UserName);
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserList = (await _userService.GetUsers()).AsQueryable();
+        Users = UserList;
+    }
+
+    private async Task UpdateUser(ApplicationUser user)
+    {
+        
+    }
+    private async Task DeleteUser(ApplicationUser user)
+    {
+
+    }
+
+}
