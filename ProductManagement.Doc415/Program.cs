@@ -7,7 +7,7 @@ using ProductManagement.Components.Account;
 using ProductManagement.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using ProductManagement.Services;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,17 +20,47 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+var configuration = builder.Configuration;
 
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    }).AddGoogle(googleOptions =>
+    {
+        googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
+        googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
     })
-    .AddIdentityCookies();
+    .AddFacebook(facebookOptions =>
+    {
+        facebookOptions.AppId = configuration["Authentication:Facebook:AppId"];
+        facebookOptions.AppSecret = configuration["Authentication:Facebook:AppSecret"];
+    }).
+    AddTwitter(twitterOptions =>
+    {
+        twitterOptions.ConsumerKey = configuration["Authentication:Twitter:ConsumerAPIKey"];
+        twitterOptions.ConsumerSecret = configuration["Authentication:Twitter:ConsumerSecret"];
+    }).AddMicrosoftAccount(microsoftOptions =>
+    {
+        microsoftOptions.ClientId = configuration["Authentication:Microsoft:ClientId"];
+        microsoftOptions.ClientSecret = configuration["Authentication:Microsoft:ClientSecret"];
+    }).AddGitHub(o =>
+    {
+        o.ClientId = builder.Configuration["Authentication:GitHub:GithubClientId"];
+        o.ClientSecret = builder.Configuration["Authentication:GitHub:GithubClientSecret"];
+        o.CallbackPath = "/signin-github";
+        // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
+        o.Scope.Add("read:user");
+
+    }).AddIdentityCookies();
+
+
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddQuickGridEntityFrameworkAdapter();;
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -43,6 +73,9 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
+builder.Services.AddDataGridEntityFrameworkAdapter();
+
+
 
 
 var app = builder.Build();
@@ -62,7 +95,6 @@ else
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
-app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
