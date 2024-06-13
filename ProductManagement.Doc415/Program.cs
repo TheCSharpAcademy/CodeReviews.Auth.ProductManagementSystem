@@ -108,10 +108,11 @@ else
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.EnsureDeleted();
     dbContext.Database.EnsureCreated();
 
     var seeder = scope.ServiceProvider.GetRequiredService<Seeder>();
-    seeder.SeedAll();
+    await seeder.SeedAll();
 }
 
 app.UseHttpsRedirection();

@@ -84,13 +84,12 @@
             return;
         }
 
-        Logger.LogInformation("Admin created a new account with password.");
-
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
      
         var resultForEmail = await UserManager.ConfirmEmailAsync(user, code);
+        Logger.LogInformation("Admin created a new account with confirmed email.");
 
         NavigationManager.NavigateTo("/administration");
 
