@@ -29,5 +29,18 @@ public class UserService
         return users;
     }
 
+    public async Task<ApplicationUser> GetUserById(string id)
+    {
+        return await _context.Users.FindAsync(id);
+    }
+
+    public async Task DeleteUser(string Id)
+    {
+        var user =await GetUserById(Id);
+        _context.Remove(user);
+        _context.SaveChangesAsync();
+
+    }
+
 
 }

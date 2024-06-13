@@ -1,10 +1,15 @@
 ﻿@page "/administration"
+@rendermode InteractiveServer
 @using ProductManagement.Data
 @using ProductManagement.Models
 @using ProductManagement.Services
 @inject UserService _userService
+@inject NavigationManager navManager
 
 <h3>administration</h3>
+<p>
+    <a href="user/register">Create New User</a>
+</p>
 
 
 <FluentDataGrid Items="@UserList" style="width: 900px;">
@@ -46,11 +51,13 @@
 
     private async Task UpdateUser(string Id)
     {
-
+        navManager.NavigateTo($"user/update?id={Id}");
     }
     private async Task DeleteUser(string Id)
     {
-
+       
+            navManager.NavigateTo($"user/delete?id={Id}");
+       
     }
 
     
