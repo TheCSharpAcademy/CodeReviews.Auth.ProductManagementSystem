@@ -10,7 +10,7 @@ public class Product
 
     [Required]
     public DateTime DateAdded { get; set; }
-   
+
     [Required]
     [Column(TypeName = "decimal(5, 2)")]
     [Range(0.1, double.MaxValue, ErrorMessage = "Price must be a positive value.")]

@@ -1,38 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Text;
-using Microsoft.AspNetCore.Components;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
-using ProductManagement.Data;
-using ProductManagement.Services;
-using ProductManagement.Components.Account;
-using ProductManagement.Components.Account.Pages;
-using Microsoft.AspNetCore.Authorization;
-
+﻿using Microsoft.AspNetCore.Identity;
+using ProductManagement.Models;
 
 namespace ProductManagement.Data;
 
 public class Seeder
-
-
-
 {
     public IUserEmailStore<ApplicationUser> _userEmailStore { get; set; }
     public ILogger<Seeder> _logger { get; set; }
     public ApplicationDbContext _context { get; set; }
     public UserManager<ApplicationUser> _userManager;
     public IUserStore<ApplicationUser> _userStore;
-    public Seeder (ApplicationDbContext context, UserManager<ApplicationUser> userManager, ILogger<Seeder> logger, IUserStore<ApplicationUser> userStore)
+    public Seeder(ApplicationDbContext context, UserManager<ApplicationUser> userManager, ILogger<Seeder> logger, IUserStore<ApplicationUser> userStore)
     {
         _context = context;
         _userManager = userManager;
         _userStore = userStore;
-        _logger=logger;
+        _logger = logger;
         _userEmailStore = (IUserEmailStore<ApplicationUser>)_userStore;
     }
 
@@ -68,7 +51,7 @@ public class Seeder
             _logger.LogError(ex.Message);
             Console.WriteLine(ex.Message);
         }
-               
+
     }
 
     public async Task SeedUser()
@@ -103,11 +86,7 @@ public class Seeder
             _logger.LogError(ex.Message);
             Console.WriteLine(ex.Message);
         }
-
     }
-
-
-
 
     private ApplicationUser CreateUser()
     {
@@ -122,11 +101,28 @@ public class Seeder
         }
     }
 
+    private async Task SeedProducts()
+    {
+        string[] ProductName = new string[] { "Macaroni", "Olive oil", "Cheese", "Tomato", "Mineral Water" };
+        decimal[] ProductPrice = new decimal[] { 3.4m, 22, 14, 2, 0.1m };
+        List<Product> Products = new();
+        for (int i = 0; i < ProductName.Length; i++)
+        {
+            Product tempProduct = new Product() { Name = ProductName[i], Price = ProductPrice[i], DateAdded = DateTime.Now };
+            Products.Add(tempProduct);
+        }
+
+        await _context.Products.AddRangeAsync(Products);
+        await _context.SaveChangesAsync();
+    }
+
+
 
     public async Task SeedAll()
     {
         await SeedAdmin();
         await SeedUser();
+        await SeedProducts();
     }
 
 }
