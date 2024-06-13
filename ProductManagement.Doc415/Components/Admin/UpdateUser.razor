@@ -9,6 +9,8 @@
 @using ProductManagement.Components.Account
 @using ProductManagement.Components.Account.Pages
 @using ProductManagement.Services
+@using ProductManagement.Models
+
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
@@ -23,23 +25,28 @@
 
 <h1>Edit User</h1>
 
+<FluentGrid>
 
-        <EditForm Model="Input"  OnValidSubmit="UpdateSelectedUser" FormName="Update" Enhance>
+    <FluentGridItem>
+         <FluentEditForm Model="Input"  OnValidSubmit="UpdateSelectedUser" FormName="Update" Enhance>
             <DataAnnotationsValidator />
           
             <FluentValidationSummary class="text-danger" role="alert" />
             <FluentStack Orientation="Orientation.Vertical">
                 <FluentTextField Name="Input.Email" @bind-value="Input.Email" AutoComplete="username" Required="true" Placeholder="name@example.com" Label="Email" Style="width: 100%" />
                 <FluentValidationMessage For="() => Input.Email" class="text-danger" />
-                <FluentTextField type="password" Name="Input.Password" Value="@Input.Password" AutoComplete="current-password" Required="true" Placeholder="password" Label="Password" Style="width: 100%" />
+                <FluentTextField type="password" Name="Input.Password" @bind-Value="Input.Password" AutoComplete="current-password" Required="true" Placeholder="password" Label="Password" Style="width: 100%" />
                 <FluentValidationMessage For="() => Input.Password" class="text-danger" />
-                <FluentTextField type="password" Name="Input.ConfirmPassword" Value="@Input.ConfirmPassword" AutoComplete="new-password" Required="true" Placeholder="password" Label="Confirm Password" Style="width: 100%" />
+                <FluentTextField type="password" Name="Input.ConfirmPassword" @bind-Value="Input.ConfirmPassword" AutoComplete="new-password" Required="true" Placeholder="password" Label="Confirm Password" Style="width: 100%" />
                 <FluentValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-                <FluentTextField Name="Input.Role" Value="@Input.Role"  Required="true"  Label="Role" Style="width: 100%" />
+                <FluentTextField Name="Input.Role" @bind-Value="Input.Role"  Required="true"  Label="Role" Style="width: 100%" />
                 <FluentValidationMessage For="() => Input.Role" class="text-danger" />
                 <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Style="width: 100%">Update User</FluentButton>
             </FluentStack>
-        </EditForm>
+        </FluentEditForm>
+    </FluentGridItem>
+</FluentGrid>
+       
     
 
 
@@ -47,76 +54,52 @@
     private IEnumerable<IdentityError>? identityErrors;
 
     private AdminInputModel? Input = new();
-
     [SupplyParameterFromQuery]
     private string? Id { get; set; }
-
+    private UserViewModel? user = new();
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+    private ApplicationUser SelectedUser = new();
 
     protected override async Task OnInitializedAsync()
     {
-       
+        user = (await _userService.GetUsers()).Single(x => x.Id == Id);
+        SelectedUser = await _userService.GetUserById(Id);
+        Input.Role = user.Role;
+        Input.Email = user.Email;
+
 
         if (Input is null)
         {
             NavigationManager.NavigateTo("notfound");
         }
+
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstrender)
-    {
-        var Input = (await _userService.GetUsers()).Single(x => x.Id == Id);
-    }
+
 
     public async Task UpdateSelectedUser()
     {
-        var user = CreateUser();
-        await UserManager.AddToRoleAsync(user, Input.Role);
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-        var emailStore = GetEmailStore();
-        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-        var result = await UserManager.CreateAsync(user, Input.Password);
+        SelectedUser.Email = Input.Email;
+        var token = await UserManager.GeneratePasswordResetTokenAsync(SelectedUser);
+        var result = await UserManager.ResetPasswordAsync(SelectedUser, token, Input.Password);
 
-        if (!result.Succeeded)
-        {
-            identityErrors = result.Errors;
-            return;
-        }
 
-        Logger.LogInformation("Admin created a new account with password.");
 
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-     
-        var resultForEmail = await UserManager.ConfirmEmailAsync(user, code);
+        await UserManager.RemoveFromRoleAsync(SelectedUser, user.Role);
+        await UserManager.AddToRoleAsync(SelectedUser, Input.Role);
+        await UserManager.UpdateAsync(SelectedUser);
+        
+
+        Logger.LogInformation("Admin updated user account.");
+
+       
 
         NavigationManager.NavigateTo("/administration");
 
         
     }
 
-    private ApplicationUser CreateUser()
-    {
-        try
-        {
-            return Activator.CreateInstance<ApplicationUser>();
-        }
-        catch
-        {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
-        }
-    }
-
-    private IUserEmailStore<ApplicationUser> GetEmailStore()
-    {
-        if (!UserManager.SupportsUserEmail)
-        {
-            throw new NotSupportedException("The default UI requires a user store with email support.");
-        }
-        return (IUserEmailStore<ApplicationUser>)UserStore;
-    }
+   
 
     private sealed class AdminInputModel
     {
