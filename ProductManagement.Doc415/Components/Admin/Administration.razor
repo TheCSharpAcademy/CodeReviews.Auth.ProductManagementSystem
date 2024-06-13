@@ -7,7 +7,7 @@
 
 @inject UserService _userService
 @inject NavigationManager navManager
-
+@attribute [Authorize(Roles = "Admin")]
 <h3>administration</h3>
 <p>
     <a href="user/register">Create New User</a>
