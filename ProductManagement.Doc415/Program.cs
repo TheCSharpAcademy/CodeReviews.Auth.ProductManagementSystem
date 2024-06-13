@@ -8,8 +8,18 @@ using ProductManagement.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using ProductManagement.Services;
 using Microsoft.AspNetCore.Authentication;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Seq("http://localhost:5341")
+    .CreateLogger();
+
+builder.Services.AddLogging(loggingBuilder =>
+{
+    loggingBuilder.AddSeq(builder.Configuration.GetSection("Seq"));
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -20,6 +30,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<RoleProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 var configuration = builder.Configuration;
 
@@ -75,6 +86,7 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
 builder.Services.AddDataGridEntityFrameworkAdapter();
+builder.Services.AddScoped<Seeder>();
 
 
 
@@ -97,6 +109,9 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.EnsureCreated();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<Seeder>();
+    seeder.SeedAll();
 }
 
 app.UseHttpsRedirection();

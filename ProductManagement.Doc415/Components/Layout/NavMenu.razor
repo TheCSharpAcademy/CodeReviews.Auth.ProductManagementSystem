@@ -10,17 +10,19 @@
     <nav class="sitenav" aria-labelledby="main-menu" onclick="document.getElementById('navmenu-toggle').click();">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded">
             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-            <FluentNavLink Href="/administration" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Administration</FluentNavLink>
+            
             <AuthorizeView>
                 <Authorized> 
                     <FluentNavLink Href="/products" Icon="@(new Icons.Regular.Size20.ShoppingBagArrowLeft())" IconColor="Color.Accent">Product Management</FluentNavLink>
                 
                     <FluentNavLink Href="Account/Manage" Icon="@(new Icons.Regular.Size20.Settings())">Account Settings</FluentNavLink>
+                    <FluentNavLink Href="/administration" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Administration</FluentNavLink>
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                         <FluentButton Type="ButtonType.Submit" Style="width: 100%;">Logout</FluentButton>
                     </form>
+                    
                 </Authorized>
                 <NotAuthorized>
                     <FluentNavLink Href="Account/Register">Register</FluentNavLink>

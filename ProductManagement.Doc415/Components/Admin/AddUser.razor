@@ -6,10 +6,12 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using ProductManagement.Data
+@using ProductManagement.Services
 @using ProductManagement.Components.Account
 @using ProductManagement.Components.Account.Pages
+@using Microsoft.AspNetCore.Authorization
 
-
+@inject RoleProvider _roleProvider;
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
@@ -17,7 +19,7 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
-
+@attribute [Authorize(Roles = "Admin")]
 <PageTitle>Add User</PageTitle>
 
 <h1>Add User</h1>
@@ -37,7 +39,8 @@
                 <FluentValidationMessage For="() => Input.Password" class="text-danger" />
                 <FluentTextField type="password" Name="Input.ConfirmPassword" @bind-Value="Input.ConfirmPassword" AutoComplete="new-password" Required="true" Placeholder="password" Label="Confirm Password" Style="width: 100%" />
                 <FluentValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-                <FluentTextField Name="Input.Role" @bind-Value="Input.Role"  Required="true"  Label="Role" Style="width: 100%" />
+               
+               
                 <FluentValidationMessage For="() => Input.Role" class="text-danger" />
                 <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Style="width: 100%">Add User</FluentButton>
             </FluentStack>
@@ -47,10 +50,11 @@
 </FluentGrid>
 
 @code {
+    string[] Roles;
     private IEnumerable<IdentityError>? identityErrors;
     private string? emailConfirmationLink;
     [SupplyParameterFromForm]
-    private AdminInputModel Input { get; set; } = new();
+    private AdminInputModel Input { get; set; } = new() { Role = "User" };
 
     ApplicationUser? user;
 
@@ -58,6 +62,12 @@
     public string Id { get; set; }
 
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Roles = _roleProvider.GetRoles();
+        Input.Role = "User";
+    }
 
     public async Task RegisterUser(EditContext editContext)
     {

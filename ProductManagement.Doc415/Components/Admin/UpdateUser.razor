@@ -10,6 +10,8 @@
 @using ProductManagement.Components.Account.Pages
 @using ProductManagement.Services
 @using ProductManagement.Models
+@using Microsoft.AspNetCore.Authorization
+@inject RoleProvider _roleProvider;
 
 
 @inject UserManager<ApplicationUser> UserManager
@@ -20,7 +22,6 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject UserService _userService
-
 <PageTitle>Edit User</PageTitle>
 
 <h1>Edit User</h1>
@@ -39,7 +40,18 @@
                 <FluentValidationMessage For="() => Input.Password" class="text-danger" />
                 <FluentTextField type="password" Name="Input.ConfirmPassword" @bind-Value="Input.ConfirmPassword" AutoComplete="new-password" Required="true" Placeholder="password" Label="Confirm Password" Style="width: 100%" />
                 <FluentValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-                <FluentTextField Name="Input.Role" @bind-Value="Input.Role"  Required="true"  Label="Role" Style="width: 100%" />
+                <FluentSelect TOption="string"
+                              Label="Select role"
+                              Items="@Roles"
+                              Id="role-listbox"
+                              Width="200px"
+                              Height="250px"
+                              OptionValue="@(p => p)"
+                              OptionText="@(p => p)"
+                              @bind-Value="@Input.Role" />
+
+
+
                 <FluentValidationMessage For="() => Input.Role" class="text-danger" />
                 <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Style="width: 100%">Update User</FluentButton>
             </FluentStack>
@@ -52,7 +64,7 @@
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
-
+    string[] Roles;
     private AdminInputModel? Input = new();
     [SupplyParameterFromQuery]
     private string? Id { get; set; }
@@ -62,6 +74,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Roles = _roleProvider.GetRoles();
         user = (await _userService.GetUsers()).Single(x => x.Id == Id);
         SelectedUser = await _userService.GetUserById(Id);
         Input.Role = user.Role;

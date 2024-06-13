@@ -2,12 +2,13 @@
 @using ProductManagement.Services
 @using ProductManagement.Data
 @using Microsoft.EntityFrameworkCore
+
 @using Microsoft.AspNetCore.Authorization
 @inject UserService _userService
 @inject NavigationManager NavigationManager
 
-@attribute [Authorize]
 
+@attribute [Authorize(Roles = "Admin")]
 <PageTitle>Delete</PageTitle>
 
 

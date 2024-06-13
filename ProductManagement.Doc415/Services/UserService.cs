@@ -26,6 +26,7 @@ public class UserService
                               Role = r.Name
                           })
                .ToListAsync();
+
         return users;
     }
 
