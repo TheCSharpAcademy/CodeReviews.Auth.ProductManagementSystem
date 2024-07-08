@@ -1,0 +1,14 @@
+<div class="flex flex-col items-center gap-4">
+  @if (isConfirmed) {
+    <h2 class="text-balance text-center text-2xl font-bold text-green-400">
+      Email confirmed successfully!
+    </h2>
+    <p class="text-center">Now you can log in to the platform.</p>
+  } @else {
+    <h2 class="text-balance text-center text-2xl font-bold text-red-600">
+      Something went wrong!
+    </h2>
+    <p class="text-center">Please try again later.</p>
+  }
+  <a class="btn primary-btn" routerLink="../login">OK</a>
+</div>
