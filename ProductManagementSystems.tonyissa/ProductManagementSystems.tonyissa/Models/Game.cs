@@ -14,11 +14,12 @@ public class Game
     [Display(Name = "Price (USD)")]
     [Range(0.01, 999.99)]
     [Precision(5, 2)]
+    [DisplayFormat(DataFormatString = "{0:C}")]
     public decimal? Price { get; set; }
     [StringLength(50, MinimumLength = 1)]
     public string Developer { get; set; } = string.Empty;
-    [StringLength(50)]
-    public string? Publisher { get; set; } = string.Empty;
+    [StringLength(25)]
+    public string Platform { get; set; } = string.Empty;
     [Display(Name = "Release Date (USA)")]
     [DisplayFormat(DataFormatString = "{0:d}", ApplyFormatInEditMode = true)]
     public DateTime USAReleaseDate { get; set; }

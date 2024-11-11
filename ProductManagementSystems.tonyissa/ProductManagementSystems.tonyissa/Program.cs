@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProductManagementSystems.tonyissa.Data;
+using ProductManagementSystems.tonyissa.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.EnsureCreated();
+    SeedData.Initialize(context);
 }
 
 if (app.Environment.IsDevelopment())
