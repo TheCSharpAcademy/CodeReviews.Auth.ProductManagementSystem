@@ -22,7 +22,7 @@ public class Game
     [Display(Name = "Release Date (USA)")]
     [DisplayFormat(DataFormatString = "{0:d}", ApplyFormatInEditMode = true)]
     public DateTime USAReleaseDate { get; set; }
-    [RegularExpression("^[A-Z][a-z]*$")]
+    [RegularExpression("^[A-Z][a-z]*$", ErrorMessage = "Genre should only contain letters and first letter should be capital")]
     [StringLength(25)]
     public string Genre { get; set; } = string.Empty;
 }
