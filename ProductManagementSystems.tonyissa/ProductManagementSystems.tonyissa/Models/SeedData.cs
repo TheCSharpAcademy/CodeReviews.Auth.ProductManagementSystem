@@ -1,10 +1,11 @@
-﻿using ProductManagementSystems.tonyissa.Data;
+﻿using Microsoft.AspNetCore.Identity;
+using ProductManagementSystems.tonyissa.Data;
 
 namespace ProductManagementSystems.tonyissa.Models;
 
 public static class SeedData
 {
-    public static void Initialize(ApplicationDbContext context)
+    public static void InitializeData(ApplicationDbContext context)
     {
         if (context.Games.Any())
             return;
@@ -43,5 +44,18 @@ public static class SeedData
         );
 
         context.SaveChanges();
+    }
+
+    public async static Task InitializeRolesAsync(RoleManager<IdentityRole> roleManager)
+    {
+        string[] roleNames = ["Admin", "User"];
+
+        foreach (string roleName in roleNames)
+        {
+            if (await roleManager.RoleExistsAsync(roleName))
+                continue;
+
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
     }
 }
