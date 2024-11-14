@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using ProductManagementSystems.tonyissa.Data;
 using ProductManagementSystems.tonyissa.Models;
+using ProductManagementSystems.tonyissa.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +17,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.Configure<ZohoSettings>(builder.Configuration.GetSection("ZohoSettings"));
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
+
 builder.Services.AddRazorPages(options =>
-{
-    options.Conventions.AuthorizeFolder("/Games");
-});
+    options.Conventions.AuthorizeFolder("/Games"));
 
 var app = builder.Build();
 
