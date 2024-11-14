@@ -1,0 +1,30 @@
+﻿@page
+@model ProductManagementSystems.tonyissa.Areas.Identity.Pages.Account.UpgradeModel
+@{
+    ViewData["Title"] = "Upgrade Account";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>
+    Would you like to upgrade your account to admin?
+</p>
+
+@if (Model.IsUpgradeSuccessful == true)
+{
+    <div class="alert alert-success">
+        Your account has been upgraded to Admin!
+    </div>
+}
+else if (Model.IsUpgradeSuccessful == false)
+{
+    <div class="alert alert-danger">
+        There was an error upgrading your account.
+    </div>
+}
+
+<form method="post" class="mt-4">
+    <button type="submit" class="btn btn-primary">Upgrade Account</button>
+    <a asp-page="/Index">
+        <button type="button" class="btn btn-danger">Go back</button>
+    </a>
+</form>
