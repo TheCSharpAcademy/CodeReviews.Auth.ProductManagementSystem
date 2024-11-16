@@ -20,8 +20,14 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.Configure<ZohoSettings>(builder.Configuration.GetSection("ZohoSettings"));
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
-builder.Services.AddRazorPages(options =>
-    options.Conventions.AuthorizeFolder("/Games"));
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+
+builder.Services.AddRazorPages(options => 
+{
+    options.Conventions.AuthorizeFolder("/Games");
+    options.Conventions.AuthorizeFolder("/Admin", "AdminPolicy");
+});
 
 var app = builder.Build();
 

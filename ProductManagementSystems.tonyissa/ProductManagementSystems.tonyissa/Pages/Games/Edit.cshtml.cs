@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ProductManagementSystems.tonyissa.Data;
 using ProductManagementSystems.tonyissa.Models;
@@ -13,11 +9,15 @@ namespace ProductManagementSystems.tonyissa.Pages.Products
 {
     public class EditModel : PageModel
     {
-        private readonly ProductManagementSystems.tonyissa.Data.ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<EditModel> _logger;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public EditModel(ProductManagementSystems.tonyissa.Data.ApplicationDbContext context)
+        public EditModel(ApplicationDbContext context, ILogger<EditModel> logger, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _logger = logger;
+            _userManager = userManager;
         }
 
         [BindProperty]
@@ -39,8 +39,6 @@ namespace ProductManagementSystems.tonyissa.Pages.Products
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
@@ -54,7 +52,7 @@ namespace ProductManagementSystems.tonyissa.Pages.Products
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!GameExists(Game.ID))
                 {
@@ -62,6 +60,19 @@ namespace ProductManagementSystems.tonyissa.Pages.Products
                 }
                 else
                 {
+                    _logger.LogError(ex, "An error has occured while trying to update a game");
+
+                    var errorLog = new ErrorLog
+                    {
+                        OccurredAt = DateTime.Now,
+                        ForUserId = _userManager.GetUserId(User)!,
+                        Message = ex.Message,
+                        RelatedItemId = Game.ID
+                    };
+
+                    _context.Errors.Add(errorLog);
+                    await _context.SaveChangesAsync();
+
                     throw;
                 }
             }
