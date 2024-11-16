@@ -1,0 +1,33 @@
+﻿@page "{id}"
+@model ProductManagementSystems.tonyissa.Pages.Admin.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>User</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <input type="hidden" asp-for="SelectedUser.Id" />
+            <div class="form-group">
+                <label asp-for="SelectedUser.Email" class="control-label"></label>
+                <input asp-for="SelectedUser.Email" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="SelectedUser.EmailConfirmed" class="control-label"></label>
+                <input asp-for="SelectedUser.EmailConfirmed" disabled="@(Model.SelectedUser.EmailConfirmed ? true : false)" />
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to Admin Portal</a>
+</div>

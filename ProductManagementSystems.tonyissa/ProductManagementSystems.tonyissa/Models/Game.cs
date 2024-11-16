@@ -14,16 +14,16 @@ public class Game
     [Display(Name = "Price (USD)")]
     [Range(0.01, 999.99)]
     [Precision(5, 2)]
-    [DisplayFormat(DataFormatString = "{0:C}")]
+    [DataType(DataType.Currency)]
     public decimal? Price { get; set; }
     [StringLength(50, MinimumLength = 1)]
     public string Developer { get; set; } = string.Empty;
-    [StringLength(25)]
+    [StringLength(25, MinimumLength = 1)]
     public string Platform { get; set; } = string.Empty;
     [Display(Name = "Release Date (USA)")]
-    [DisplayFormat(DataFormatString = "{0:d}", ApplyFormatInEditMode = true)]
+    [DataType(DataType.Date)]
     public DateTime USAReleaseDate { get; set; }
-    [RegularExpression("^[A-Z][a-z]*$", ErrorMessage = "Genre should only contain letters and first letter should be capital")]
-    [StringLength(25)]
+    [RegularExpression("^[A-Z][a-zA-Z\\s-]*$", ErrorMessage = "Genre should only contain letters, dashes, or spaces, and first letter should be capital")]
+    [StringLength(30, MinimumLength = 1)]
     public string Genre { get; set; } = string.Empty;
 }

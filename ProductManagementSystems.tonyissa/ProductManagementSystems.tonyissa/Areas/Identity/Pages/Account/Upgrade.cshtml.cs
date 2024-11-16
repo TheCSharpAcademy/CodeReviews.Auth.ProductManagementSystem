@@ -8,12 +8,14 @@ namespace ProductManagementSystems.tonyissa.Areas.Identity.Pages.Account
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly ILogger<UpgradeModel> _logger;
         public bool? IsUpgradeSuccessful { get; set; }
 
-        public UpgradeModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public UpgradeModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ILogger<UpgradeModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _logger = logger;
         }
 
         public async Task<IActionResult> OnPost()
@@ -30,6 +32,7 @@ namespace ProductManagementSystems.tonyissa.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 IsUpgradeSuccessful = true;
+                _logger.LogInformation("User upgraded to admin");
             }
             else
             {
