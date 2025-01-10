@@ -50,6 +50,9 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var roles = Enum.GetNames<Roles>();
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureDeleted();
+    context.Database.EnsureCreated();
     if (roles.Any())
     {
         foreach (var role in roles)
@@ -63,9 +66,7 @@ using (var scope = app.Services.CreateScope())
     }
    
 
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    context.Database.EnsureDeleted();
-    context.Database.EnsureCreated();
+   
 }
 app.UseHttpsRedirection();
 app.UseRouting();

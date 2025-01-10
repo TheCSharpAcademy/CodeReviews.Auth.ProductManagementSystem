@@ -82,6 +82,7 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
             /// </summary>
             [Display(Name = "Remember me?")]
             public bool RememberMe { get; set; }
+            
         }
 
         public async Task OnGetAsync(string returnUrl = null)

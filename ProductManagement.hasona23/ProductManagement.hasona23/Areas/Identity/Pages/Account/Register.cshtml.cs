@@ -109,6 +109,7 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
             
             [Display(Name = "Role")]
+            [Required]
             public string Role { get; set; }
         }
 
@@ -128,7 +129,6 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
-                
                 await _userStore.SetUserNameAsync(user, Input.UserName, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 
@@ -136,14 +136,19 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    _logger.LogCritical($"{Input.Role}");
                     _logger.LogInformation("User created a new account with password.");
                     //Assign Role
                     var role = await _roleManager.FindByNameAsync(Input.Role);
                     if (role != null)
-                        await  _userManager.AddToRoleAsync(user, role.Name); 
-                    
+                    {
+                        await _userManager.AddToRoleAsync(user, role.Name);
+                        await _userManager.AddToRoleAsync(user, role.Name);
+                    }
+
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    await _signInManager.SignInAsync(user, isPersistent: false);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",

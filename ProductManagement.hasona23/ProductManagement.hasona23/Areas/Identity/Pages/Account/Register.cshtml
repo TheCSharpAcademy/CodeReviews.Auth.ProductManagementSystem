@@ -43,11 +43,16 @@
                 <div class="btn-group " role="group" aria-label="Basic radio toggle button group">
                     @foreach (var role in Enum.GetNames<Roles>())
                     {
-                        <input type="radio" class="btn-check" value="@role" id="role_@role" name="btnradio"
-                               autocomplete="off" asp-for="Input.Role">
+                        <input type="radio" 
+                               class="btn-check" 
+                               id="role_@role" 
+                               name="Input.Role" 
+                               value="@role" 
+                               asp-for="Input.Role">
                         <label class="btn btn-outline-primary" for="role_@role" asp-for="Input.Role">@role</label>
                     }
                 </div>
+                <span asp-validation-for="Input.Role" class="text-danger"></span>
             </div>
             <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </form>
