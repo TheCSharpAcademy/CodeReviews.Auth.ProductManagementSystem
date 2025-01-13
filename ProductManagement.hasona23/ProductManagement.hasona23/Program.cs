@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using ProductManagement.hasona23.Data;
 using ProductManagement.hasona23.Enums;
+using ProductManagement.hasona23.Services;
+using ProductManagement.hasona23.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+EmailConfig emailConfig = builder.Configuration.GetSection("EmailConfig").Get<EmailConfig>()?? throw new InvalidOperationException("Email config section not found.");
+builder.Services.AddSingleton<EmailConfig>(emailConfig);
+
+builder.Services.AddTransient<IEmailSender,EmailSender>();
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     //TODO: Sign in options
@@ -28,6 +35,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     //TODO: Cookie Configure
     options.Cookie.HttpOnly = true;
+   
 });
 builder.Services.AddControllersWithViews();
 

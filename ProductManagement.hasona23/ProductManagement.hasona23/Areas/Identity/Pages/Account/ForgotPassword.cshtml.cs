@@ -19,11 +19,13 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
     public class ForgotPasswordModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSender _emailSender;
 
-        public ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(UserManager<IdentityUser> userManager,RoleManager<IdentityRole> roleManager, IEmailSender emailSender)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _emailSender = emailSender;
         }
 
