@@ -1,0 +1,55 @@
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+@inject UserManager<IdentityUser> UserManager
+@{
+    ViewData["Title"] = "Index";
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<h1>Index</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                Roles
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            @if (UserManager.GetRolesAsync(user).Result.Contains("Admin"))
+            {
+                continue;
+            }
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => user.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => user.Email)
+                </td>
+                <td>
+                    @foreach (string role in await UserManager.GetRolesAsync(user))
+                    {
+                        <p>@role</p>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-primary" asp-action="Promote" asp-route-id="@user.Id">Promote To Staff</a> |
+                    <a  class="btn btn-warning" asp-action="Demote" asp-route-id="@user.Id">Demote to Customer</a>|
+                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@user.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

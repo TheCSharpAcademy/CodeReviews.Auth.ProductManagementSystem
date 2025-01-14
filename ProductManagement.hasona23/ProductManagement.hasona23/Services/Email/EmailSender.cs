@@ -5,11 +5,11 @@ using MimeKit.Text;
 
 namespace ProductManagement.hasona23.Services.Email;
 
-public class EmailSender:IEmailSender
+public class EmailSender : IEmailSender
 {
     private EmailConfig _emailConfig;
     private ILogger<EmailSender> _logger;
-    public EmailSender(EmailConfig emailConfig,ILogger<EmailSender> logger)
+    public EmailSender(EmailConfig emailConfig, ILogger<EmailSender> logger)
     {
         _logger = logger;
         try
@@ -17,7 +17,7 @@ public class EmailSender:IEmailSender
             _emailConfig = emailConfig;
             _logger.LogInformation($"Email Sender Initialised Successfully");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogCritical($"Error Initing Email Sender {ex}");
         }
@@ -28,7 +28,7 @@ public class EmailSender:IEmailSender
         var message = new MimeMessage
         {
             Subject = subject,
-            Body = new TextPart(TextFormat.Html){Text = htmlMessage},
+            Body = new TextPart(TextFormat.Html) { Text = htmlMessage },
         };
         message.From.Add(new MailboxAddress("Sender Name", "sender@email.com"));
         message.To.Add(new MailboxAddress("Receiver Name", "receiver@email.com"));
@@ -41,9 +41,9 @@ public class EmailSender:IEmailSender
 
                 // Note: only needed if the SMTP server requires authentication
                 smtp.Authenticate(_emailConfig.UserName, _emailConfig.Password);
-                smtp.Send(message);
+                await smtp.SendAsync(message);
                 smtp.Disconnect(true);
-                _logger.LogInformation($"Email sent successfully to {email}");   
+                _logger.LogInformation($"Email sent successfully to {email}");
             }
         }
         catch (Exception ex)

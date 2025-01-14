@@ -2,23 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
-using ProductManagement.hasona23.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
+using System.Text.Encodings.Web;
 
 namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
 {
@@ -54,10 +46,10 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         [BindProperty]
-        public InputModel Input { get; set; } = new(); 
-        
-        
-        
+        public InputModel Input { get; set; } = new();
+
+
+
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -84,7 +76,7 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
             [Required]
             [Display(Name = "User Name")]
             public string UserName { get; set; }
-            
+
             [Required]
             [EmailAddress]
             [Display(Name = "Email")]
@@ -108,7 +100,7 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-            
+
             [Display(Name = "Role")]
             [Required]
             public string Role { get; set; }
@@ -124,7 +116,7 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            _logger.LogInformation("Role: "+Input.Role);
+            _logger.LogInformation("Role: " + Input.Role);
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
@@ -146,10 +138,9 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
                         await _userManager.AddToRoleAsync(user, role.Name);
                     }
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    //TODO: Add For Email To stAFF only
-                    //if (role.Name == Roles.Admin.ToString())
-                    //  return Page();
-                    if (role.Name == Roles.Staff.ToString())
+
+                    //TODO: Make it only for Staff ROLE
+                    if (1 == 0)
                     {
 
 
