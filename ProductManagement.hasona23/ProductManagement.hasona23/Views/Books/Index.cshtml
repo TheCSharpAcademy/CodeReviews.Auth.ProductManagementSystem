@@ -1,12 +1,32 @@
-@model IEnumerable<ProductManagement.hasona23.Models.BookModel>
+@model BookSearchModel
 
 @{
     ViewData["Title"] = "Index";
+    
     var isAdmin = User.IsInRole("Admin");
     var isStaff = User.IsInRole("Staff");
 }
 
 <h1>Index</h1>
+<button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#bookSearchCollapse"
+        aria-expanded="false" aria-controls="bookSearchCollapse">
+    Search Books
+</button>
+<div class="collapse" id="bookSearchCollapse">
+    <div class="card card-body">
+
+        <form method="get">
+            <label>Name: <input type="text" asp-for="BookName"/></label>
+            <span>
+                <label>Max Price: <input type="number" min="0" max="100" asp-for="MaxPrice"/></label>
+                <label>Min Price: <input type="number" min="0" max="100" asp-for="MinPrice"/></label>
+            </span>
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="Index" class="btn btn-secondary">Reset</a>
+        </form>
+    </div>
+</div>
+
 @if (isAdmin || isStaff)
 {
     <p>
@@ -17,16 +37,16 @@
     <thead>
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayName("Title")
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Price)
+            @Html.DisplayName("Price")
         </th>
         <th></th>
     </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model)
+    @foreach (var item in Model.Books)
     {
         <tr>
             <td>
@@ -36,7 +56,7 @@
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
-                <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a> 
+                <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
                 @if (isAdmin || isStaff)
                 {
                     <span>

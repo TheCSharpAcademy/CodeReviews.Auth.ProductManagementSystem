@@ -22,9 +22,12 @@ namespace ProductManagement.hasona23.Controllers
         }
 
         // GET: Books
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(BookSearchModel? bookSearchModel)
         {
-            return View(await _context.Books.ToListAsync());
+            bookSearchModel = bookSearchModel ?? new BookSearchModel();
+            bookSearchModel.Books = await _context.Books.ToListAsync();
+            bookSearchModel.Books = bookSearchModel.SearchBooks().OrderBy(b => b.Name);
+            return View(bookSearchModel);
         }
 
         // GET: Books/Details/5

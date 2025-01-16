@@ -23,11 +23,29 @@ namespace ProductManagement.hasona23.Controllers
 
 
         // GET: Books
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(UserSearchModel? searchModel)
         {
-            return View(await _context.Users.ToListAsync());
-        }
+            if (searchModel == null)
+            {
+                searchModel = new UserSearchModel();
+            }
+
+            // Initialize with all users
+            searchModel.Users = await _userManager.Users.ToListAsync();
         
+            // Perform search if any criteria are set
+            if (!string.IsNullOrEmpty(searchModel.SearchUserName) || 
+                !string.IsNullOrEmpty(searchModel.SearchEmail) || 
+                searchModel.IsEmailConfirmed.HasValue || 
+                !string.IsNullOrEmpty(searchModel.SearchRole))
+            {
+                searchModel.Users = (await searchModel.SearchUsers(_userManager)).OrderBy(user => user.UserName);
+            }
+            
+            return View(searchModel);
+        }
+    
+
         // GET: Books/Promote/5
         public async Task<IActionResult> Promote(string? id)
         {
@@ -85,9 +103,9 @@ namespace ProductManagement.hasona23.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-       
+
         // GET: Books/Delete/5
-        
+
         public async Task<IActionResult> Delete(string? id)
         {
             if (id == null)
@@ -107,7 +125,7 @@ namespace ProductManagement.hasona23.Controllers
         // POST: Books/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        
+
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -126,6 +144,6 @@ namespace ProductManagement.hasona23.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        
+
     }
 }
