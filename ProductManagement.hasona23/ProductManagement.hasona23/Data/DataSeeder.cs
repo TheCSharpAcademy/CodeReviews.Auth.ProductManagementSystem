@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using ProductManagement.hasona23.Enums;
+using ProductManagement.hasona23.Constants;
 using ProductManagement.hasona23.Models;
 
 namespace ProductManagement.hasona23.Data;
@@ -31,7 +31,7 @@ public static class DataSeeder
             var result = await userManager.CreateAsync(admin, adminPassword);
             if (result.Succeeded)
             {
-                await userManager.AddToRoleAsync(admin, "Admin");
+                await userManager.AddToRoleAsync(admin, Roles.Admin);
             }
         }
 
@@ -46,7 +46,7 @@ public static class DataSeeder
                 var result = await userManager.CreateAsync(staff, staffPassword);
                 if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(staff, "Staff");
+                    await userManager.AddToRoleAsync(staff, Roles.Staff);
                 }
             }
         }
@@ -62,7 +62,7 @@ public static class DataSeeder
                 var result = await userManager.CreateAsync(customer, customerPassword);
                 if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(customer, "Customer");
+                    await userManager.AddToRoleAsync(customer, Roles.Customer);
                 }
             }
         }

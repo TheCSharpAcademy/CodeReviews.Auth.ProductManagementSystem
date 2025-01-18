@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using ProductManagement.hasona23.Constants;
 using ProductManagement.hasona23.Data;
-using ProductManagement.hasona23.Enums;
 using ProductManagement.hasona23.Models;
 
 namespace ProductManagement.hasona23.Controllers
@@ -22,15 +17,32 @@ namespace ProductManagement.hasona23.Controllers
         }
 
         // GET: Books
-        public async Task<IActionResult> Index(BookSearchModel? bookSearchModel)
+        public async Task<IActionResult> Index(string? bookName, int? maxPrice, int? minPrice, int page = 1)
         {
-            bookSearchModel = bookSearchModel ?? new BookSearchModel();
-            bookSearchModel.Books = await _context.Books.ToListAsync();
+            var bookSearchModel = new BookSearchModel
+            {
+                BookName = bookName,
+                MaxPrice = maxPrice,
+                MinPrice = minPrice,
+                CurrentPage = page
+            };
+
+            const int pageSize = 4;
+            var books = await _context.Books.ToListAsync() ?? new List<BookModel>();
+
+            // Create paginated list
+
+            // Assign the books and apply search filters
+            bookSearchModel.Books = books; // Ensure it's not null
             bookSearchModel.Books = bookSearchModel.SearchBooks().OrderBy(b => b.Name);
+            var paginatedBooks = new PaginatedList<BookModel>(bookSearchModel.Books.ToList(), page, pageSize);
+            bookSearchModel.Books = paginatedBooks.GetItems();
+            bookSearchModel.TotalPages = paginatedBooks.TotalPages;
             return View(bookSearchModel);
         }
 
-        // GET: Books/Details/5
+
+        // GET: Books/Details/5    
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -49,7 +61,7 @@ namespace ProductManagement.hasona23.Controllers
         }
 
         // GET: Books/Create
-        [Authorize(Roles = "Admin , Staff")]
+        [Authorize(Roles = $"{Roles.Admin} , {Roles.Staff}")]
         public IActionResult Create()
         {
             return View();
@@ -69,11 +81,12 @@ namespace ProductManagement.hasona23.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(bookModel);
         }
 
         // GET: Books/Edit/5
-        [Authorize(Roles = "Admin , Staff")]
+        [Authorize(Roles = $"{Roles.Admin} , {Roles.Staff}")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -86,6 +99,7 @@ namespace ProductManagement.hasona23.Controllers
             {
                 return NotFound();
             }
+
             return View(bookModel);
         }
 
@@ -94,7 +108,7 @@ namespace ProductManagement.hasona23.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin , Staff")]
+        [Authorize(Roles = $"{Roles.Admin} , {Roles.Staff}")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price")] BookModel bookModel)
         {
             if (id != bookModel.Id)
@@ -120,8 +134,10 @@ namespace ProductManagement.hasona23.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(bookModel);
         }
 
@@ -147,7 +163,7 @@ namespace ProductManagement.hasona23.Controllers
         // POST: Books/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin , Staff")]
+        [Authorize(Roles = $"{Roles.Admin} , {Roles.Staff}")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var bookModel = await _context.Books.FindAsync(id);

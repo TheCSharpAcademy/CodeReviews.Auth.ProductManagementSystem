@@ -1,5 +1,5 @@
 ﻿@page
-@using ProductManagement.hasona23.Enums
+@using ProductManagement.hasona23.Constants
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
@@ -41,7 +41,7 @@
             </div>
             <div class="form-floating mb-3 align-self-center">
                 <div class="btn-group " role="group" aria-label="Basic radio toggle button group">
-                    @foreach (var role in Enum.GetNames<Roles>())
+                    @foreach (var role in Roles.GetAllRoles())
                     {
                         <input type="radio" 
                                class="btn-check" 

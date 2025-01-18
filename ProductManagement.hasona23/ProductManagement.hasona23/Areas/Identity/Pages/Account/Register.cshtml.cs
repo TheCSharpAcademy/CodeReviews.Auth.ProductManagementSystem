@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
+using ProductManagement.hasona23.Constants;
 
 namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
 {
@@ -138,9 +139,8 @@ namespace ProductManagement.hasona23.Areas.Identity.Pages.Account
                         await _userManager.AddToRoleAsync(user, role.Name);
                     }
                     await _signInManager.SignInAsync(user, isPersistent: false);
-
-                    //TODO: Make it only for Staff ROLE
-                    if (1 == 0)
+                    
+                    if (role.Name == Roles.Staff)
                     {
 
 

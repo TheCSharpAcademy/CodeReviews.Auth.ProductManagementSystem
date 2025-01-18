@@ -8,6 +8,10 @@ public class BookSearchModel
     public string? BookName { get; set; }
     public int? MaxPrice { get; set; }
     public int? MinPrice { get; set; }
+    public int? CurrentPage { get; set; }
+    public int? TotalPages { get; set; }
+    public bool HasNextPage => CurrentPage < TotalPages;
+    public bool HasPreviousPage => CurrentPage > 1;
 
     public IEnumerable<BookModel> SearchBooks()
     {

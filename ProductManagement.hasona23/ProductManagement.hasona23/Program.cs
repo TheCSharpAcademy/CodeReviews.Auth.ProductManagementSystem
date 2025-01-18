@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using ProductManagement.hasona23.Constants;
 using ProductManagement.hasona23.Data;
-using ProductManagement.hasona23.Enums;
 using ProductManagement.hasona23.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -66,7 +66,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = Enum.GetNames<Roles>();
+    var roles = Roles.GetAllRoles();
     var context = services.GetRequiredService<ApplicationDbContext>();
     //context.Database.EnsureDeleted();
     context.Database.EnsureCreated();

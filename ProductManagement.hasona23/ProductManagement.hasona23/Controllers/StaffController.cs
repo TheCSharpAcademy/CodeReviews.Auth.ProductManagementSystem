@@ -2,46 +2,51 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProductManagement.hasona23.Constants;
 using ProductManagement.hasona23.Data;
 using ProductManagement.hasona23.Models;
 
 namespace ProductManagement.hasona23.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public class StaffController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public StaffController(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly ILogger<StaffController> _logger;
+        public StaffController(ApplicationDbContext context, ILogger<StaffController> logger,UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _logger = logger;
         }
 
 
 
         // GET: Books
-        public async Task<IActionResult> Index(UserSearchModel? searchModel)
+        public async Task<IActionResult> Index(string? searchUserName, string? searchEmail,string? searchRole,
+            bool? isEmailConfirmed,int page=1)
         {
-            if (searchModel == null)
+            var searchModel = new UserSearchModel
             {
-                searchModel = new UserSearchModel();
-            }
-
+                SearchUserName = searchUserName,
+                SearchEmail = searchEmail,
+                SearchRole = searchRole,
+                IsEmailConfirmed = isEmailConfirmed,
+                CurrentPage = page,
+            };
             // Initialize with all users
-            searchModel.Users = await _userManager.Users.ToListAsync();
-        
-            // Perform search if any criteria are set
-            if (!string.IsNullOrEmpty(searchModel.SearchUserName) || 
-                !string.IsNullOrEmpty(searchModel.SearchEmail) || 
-                searchModel.IsEmailConfirmed.HasValue || 
-                !string.IsNullOrEmpty(searchModel.SearchRole))
-            {
-                searchModel.Users = (await searchModel.SearchUsers(_userManager)).OrderBy(user => user.UserName);
-            }
-            
+            const int pageSize = 4;
+            // Apply search filters asynchronously
+            var filteredUsers = await searchModel.SearchUsers(_userManager);
+
+            // Sort and paginate
+            var paginatedUsers = new PaginatedList<IdentityUser>(filteredUsers.OrderBy(user => user.UserName).ToList(), page, pageSize);
+
+            searchModel.Users = paginatedUsers.GetItems();
+            searchModel.TotalPages = paginatedUsers.TotalPages;
             return View(searchModel);
         }
     

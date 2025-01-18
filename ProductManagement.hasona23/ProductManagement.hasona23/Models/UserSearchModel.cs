@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
-namespace ProductManagement.hasona23.Models;
 
 public class UserSearchModel
 {
@@ -11,29 +8,45 @@ public class UserSearchModel
     public string? SearchEmail { get; set; }
     public string? SearchUserName { get; set; }
     public bool? IsEmailConfirmed { get; set; }
+    public int? CurrentPage { get; set; }
+    public int? TotalPages { get; set; }
+    public bool HasNextPage => CurrentPage < TotalPages;
+    public bool HasPreviousPage => CurrentPage > 1;
 
     public async Task<IEnumerable<IdentityUser>> SearchUsers(UserManager<IdentityUser> userManager)
     {
-        IEnumerable<IdentityUser> users = Users ?? await userManager.Users.ToListAsync();
-        if (SearchRole != null)
+        var users = await userManager.Users.ToListAsync();
+
+        if (!string.IsNullOrEmpty(SearchRole))
         {
-            users = users.Where(user =>  userManager.IsInRoleAsync(user, SearchRole).Result);
+            var roleUsers = new List<IdentityUser>();
+            foreach (var user in users)
+            {
+                if (await userManager.IsInRoleAsync(user, SearchRole))
+                {
+                    roleUsers.Add(user);
+                }
+            }
+            users = roleUsers;
         }
 
         if (IsEmailConfirmed.HasValue)
         {
-            users = users.Where(user => userManager.IsEmailConfirmedAsync(user).Result == IsEmailConfirmed);
+            users = users.Where(user => user.EmailConfirmed == IsEmailConfirmed.Value).ToList();
         }
 
-        if (SearchUserName != null)
+        if (!string.IsNullOrEmpty(SearchUserName))
         {
-            users = users.Where(user => user.UserName.ToUpper().Contains(SearchUserName.ToUpper()));
+            users = users.Where(user => user.UserName != null && 
+                                        user.UserName.Contains(SearchUserName)).ToList();
         }
 
-        if (SearchEmail != null)
+        if (!string.IsNullOrEmpty(SearchEmail))
         {
-            users = users.Where(user => user.Email.Contains(SearchEmail));
+            users = users.Where(user => user.Email != null && 
+                                        user.Email.Contains(SearchEmail)).ToList();
         }
+
         return users;
-    } 
+    }
 }
