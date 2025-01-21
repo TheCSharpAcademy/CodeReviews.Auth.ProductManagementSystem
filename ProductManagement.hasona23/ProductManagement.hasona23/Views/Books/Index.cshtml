@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Index";
-    
+
     var isAdmin = User.IsInRole(Roles.Admin);
     var isStaff = User.IsInRole(Roles.Staff);
 }
@@ -22,6 +22,16 @@
                 <label>Max Price: <input type="number" min="0" max="100" asp-for="MaxPrice"/></label>
                 <label>Min Price: <input type="number" min="0" max="100" asp-for="MinPrice"/></label>
             </span>
+            @if (isAdmin || isStaff)
+            {
+                <select asp-for="IsActive">
+                    <option value="@null" >Both</option>
+                    <option value="@true">True</option>
+                    <option value="@false">False</option>
+                </select>
+                <label>Date Added : <input type="date"  asp-for="DateAdded"/></label>
+            }
+            
             <button type="submit" class="btn btn-primary">Search</button>
             <a asp-action="Index" class="btn btn-secondary">Reset</a>
         </form>
@@ -43,27 +53,39 @@
         <th>
             @Html.DisplayName("Price")
         </th>
+        @if (isAdmin || isStaff)
+        {
+            <th>
+                @Html.DisplayName("Date Added")
+            </th>
+        }
         <th></th>
     </tr>
     </thead>
     <tbody>
     @foreach (var item in Model.Books)
     {
-        <tr>
+        <tr class="@(item.IsActive ? "": "table-danger")">
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
+            @if (isAdmin || isStaff)
+            {
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateAdded)
+                </td>
+            }
             <td>
                 <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
                 @if (isAdmin || isStaff)
                 {
                     <span>
-                        | <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </span>
+                            | <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        </span>
                 }
             </td>
         </tr>
@@ -73,27 +95,34 @@
     <nav aria-label="Page navigation">
         <ul class="pagination">
             <li class="page-item">
-                <a class="page-link @(Model.HasPreviousPage ? "" : "disabled")"  asp-route-page="@(Model.CurrentPage - 1)"
+                <a class="page-link @(Model.HasPreviousPage ? "" : "disabled")"
+                   asp-route-page="@(Model.CurrentPage - 1)"
                    asp-route-bookName="@Model.BookName"
                    asp-route-maxPrice="@Model.MaxPrice"
-                   asp-route-minPrice="@Model.MinPrice">Previous</a>
+                   asp-route-minPrice="@Model.MinPrice"
+                   asp-route-isActive="@Model.IsActive"
+                   asp-route-dateAdded="@Model.DateAdded">Previous</a>
             </li>
 
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item">
-                    <a class="page-link"  asp-route-page="@i"
+                    <a class="page-link" asp-route-page="@i"
                        asp-route-bookName="@Model.BookName"
                        asp-route-maxPrice="@Model.MaxPrice"
-                       asp-route-minPrice="@Model.MinPrice">@i</a>
+                       asp-route-minPrice="@Model.MinPrice"
+                       asp-route-isActive="@Model.IsActive"
+                       asp-route-dateAdded="@Model.DateAdded">@i</a>
                 </li>
             }
 
             <li class="page-item">
-                <a class="page-link @(Model.HasNextPage ? "" : "disabled")"  asp-route-page="@(Model.CurrentPage + 1)"
+                <a class="page-link @(Model.HasNextPage ? "" : "disabled")" asp-route-page="@(Model.CurrentPage + 1)"
                    asp-route-bookName="@Model.BookName"
                    asp-route-maxPrice="@Model.MaxPrice"
-                   asp-route-minPrice="@Model.MinPrice">Next</a>
+                   asp-route-minPrice="@Model.MinPrice"
+                   asp-route-isActive="@Model.IsActive"
+                   asp-route-dateAdded="@Model.DateAdded">Next</a>
             </li>
         </ul>
     </nav>

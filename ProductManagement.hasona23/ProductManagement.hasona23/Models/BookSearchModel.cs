@@ -8,6 +8,8 @@ public class BookSearchModel
     public string? BookName { get; set; }
     public int? MaxPrice { get; set; }
     public int? MinPrice { get; set; }
+    public bool? IsActive { get; set; }
+    public DateTime? DateAdded { get; set; }
     public int? CurrentPage { get; set; }
     public int? TotalPages { get; set; }
     public bool HasNextPage => CurrentPage < TotalPages;
@@ -22,6 +24,10 @@ public class BookSearchModel
             books = books.Where(x => x.Price >= MinPrice.Value);
         if(BookName != null)
             books = books.Where(x => x.Name.ToUpper().Contains(BookName.ToUpper()));
+        if(IsActive.HasValue)
+            books = books.Where(x => x.IsActive == IsActive.Value);
+        if(DateAdded.HasValue)
+            books = books.Where(x => x.DateAdded >= DateAdded.Value);
         return books;
     }
 }

@@ -10,12 +10,14 @@ public static class DataSeeder
     {
         if (context.Books.Any())
             return;
-        for (int i = 1; i <= 10; i++)
+        for (int i = 1; i <= 64; i++)
         {
             context.Books.Add(new BookModel
             {
                 Name = $"Book {i}",
                 Price = new Random().Next(2,20),
+                DateAdded = DateTime.Now.AddDays(-new Random().Next(100)),
+                IsActive = i % 2 == 0,
             });
         }
         context.SaveChanges();

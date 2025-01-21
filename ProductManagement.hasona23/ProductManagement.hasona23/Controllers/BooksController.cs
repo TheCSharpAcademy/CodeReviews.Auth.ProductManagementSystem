@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductManagement.hasona23.Constants;
@@ -10,31 +11,40 @@ namespace ProductManagement.hasona23.Controllers
     public class BooksController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public BooksController(ApplicationDbContext context)
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        public BooksController(ApplicationDbContext context, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
         {
             _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         // GET: Books
-        public async Task<IActionResult> Index(string? bookName, int? maxPrice, int? minPrice, int page = 1)
+        public async Task<IActionResult> Index(string? bookName, int? maxPrice, int? minPrice, bool? isActive,DateTime? dateAdded,int page = 1)
         {
             var bookSearchModel = new BookSearchModel
             {
                 BookName = bookName,
                 MaxPrice = maxPrice,
                 MinPrice = minPrice,
+                IsActive = isActive,
+                DateAdded = dateAdded,
                 CurrentPage = page
             };
+            if(!_signInManager.IsSignedIn(User) || IsUserInRole(Roles.Customer))
+                bookSearchModel.IsActive = true;
 
             const int pageSize = 4;
-            var books = await _context.Books.ToListAsync() ?? new List<BookModel>();
+            var books = await _context.Books.ToListAsync();
 
             // Create paginated list
-
+            
             // Assign the books and apply search filters
-            bookSearchModel.Books = books; // Ensure it's not null
-            bookSearchModel.Books = bookSearchModel.SearchBooks().OrderBy(b => b.Name);
+            bookSearchModel.Books = books; 
+            bookSearchModel.Books = bookSearchModel.SearchBooks().OrderBy(b => b.Name)
+                .ThenBy(b => b.IsActive)
+                .ThenBy(b => b.DateAdded);
             var paginatedBooks = new PaginatedList<BookModel>(bookSearchModel.Books.ToList(), page, pageSize);
             bookSearchModel.Books = paginatedBooks.GetItems();
             bookSearchModel.TotalPages = paginatedBooks.TotalPages;
@@ -77,6 +87,7 @@ namespace ProductManagement.hasona23.Controllers
         {
             if (ModelState.IsValid)
             {
+                bookModel.DateAdded = DateTime.Now;
                 _context.Add(bookModel);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -179,6 +190,14 @@ namespace ProductManagement.hasona23.Controllers
         private bool BookModelExists(int id)
         {
             return _context.Books.Any(e => e.Id == id);
+        }
+
+        private bool IsUserInRole(string role)
+        {
+            if (!_signInManager.IsSignedIn(User))
+                return false;
+            var user =  _userManager.FindByNameAsync(User.Identity.Name).Result;
+            return _userManager.IsInRoleAsync(user, role).Result;
         }
     }
 }
