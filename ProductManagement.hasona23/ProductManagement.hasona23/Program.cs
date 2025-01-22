@@ -20,16 +20,15 @@ builder.Services.AddSingleton<EmailConfig>(emailConfig);
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
-    //TODO: Sign in options
     //options.SignIn.RequireConfirmedAccount = false;
     options.SignIn.RequireConfirmedEmail = false;
 
 
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequiredLength = 8;
 
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
@@ -39,12 +38,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    //TODO: Cookie Configure
     options.Cookie.HttpOnly = true;
-
-    //options.ExpireTimeSpan = TimeSpan.FromSeconds(1); // Very short expiration for testing
-    //options.SlidingExpiration = true;
-
 });
 builder.Services.AddControllersWithViews();
 
