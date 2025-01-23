@@ -88,11 +88,20 @@
             </td>
             <td>
 
-                @if (!UserManager.GetRolesAsync(user).Result.Contains("Admin"))
+                @if (!UserManager.IsInRoleAsync(user,Roles.Admin).Result)
                 {
                     <span>
-                        <a class="btn btn-primary" asp-action="Promote" asp-route-id="@user.Id">Promote To Staff</a> |
-                        <a class="btn btn-warning" asp-action="Demote" asp-route-id="@user.Id">Demote to Customer</a>|
+                        @if (!UserManager.IsInRoleAsync(user, Roles.Staff).Result)
+                        {
+                            <span><a class="btn btn-primary justify-content-center" style="min-width: 200px" asp-action="Promote" 
+                                      asp-route-id="@user.Id">Promote to Staff</a>|</span>
+                        }
+                        else
+                        {
+                            <span> <a class="btn btn-warning justify-content-center" style="min-width: 200px" asp-action="Demote" 
+                                      asp-route-id="@user.Id">Demote to Customer</a>|</span>
+                        }
+                       
                         <a class="btn btn-danger" asp-action="Delete" asp-route-id="@user.Id">Delete</a>
                     </span>
                 }

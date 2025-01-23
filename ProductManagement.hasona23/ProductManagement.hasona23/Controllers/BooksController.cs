@@ -13,15 +13,20 @@ namespace ProductManagement.hasona23.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        public BooksController(ApplicationDbContext context, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        private readonly ILogger<BooksController> _logger;
+
+        public BooksController(ApplicationDbContext context, UserManager<IdentityUser> userManager,
+            ILogger<BooksController> logger, SignInManager<IdentityUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
+            _logger = logger;
         }
 
         // GET: Books
-        public async Task<IActionResult> Index(string? bookName, int? maxPrice, int? minPrice, bool? isActive,DateTime? dateAdded,int page = 1)
+        public async Task<IActionResult> Index(string? bookName, int? maxPrice, int? minPrice, bool? isActive,
+            DateTime? dateAdded, int page = 1)
         {
             var bookSearchModel = new BookSearchModel
             {
@@ -32,16 +37,16 @@ namespace ProductManagement.hasona23.Controllers
                 DateAdded = dateAdded,
                 CurrentPage = page
             };
-            if(!_signInManager.IsSignedIn(User) || IsUserInRole(Roles.Customer))
+            if (!_signInManager.IsSignedIn(User) || IsUserInRole(Roles.Customer))
                 bookSearchModel.IsActive = true;
 
             const int pageSize = 4;
             var books = await _context.Books.ToListAsync();
 
             // Create paginated list
-            
+
             // Assign the books and apply search filters
-            bookSearchModel.Books = books; 
+            bookSearchModel.Books = books;
             bookSearchModel.Books = bookSearchModel.SearchBooks().OrderBy(b => b.Name)
                 .ThenBy(b => b.IsActive)
                 .ThenBy(b => b.DateAdded);
@@ -64,6 +69,7 @@ namespace ProductManagement.hasona23.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (bookModel == null)
             {
+                _logger.LogWarning($"Could not find book ID: {id}");
                 return NotFound();
             }
 
@@ -82,14 +88,23 @@ namespace ProductManagement.hasona23.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin , Staff")]
+        [Authorize(Roles = $"{Roles.Admin} , {Roles.Staff}")]
         public async Task<IActionResult> Create([Bind("Id,Name,Price")] BookModel bookModel)
         {
             if (ModelState.IsValid)
             {
-                bookModel.DateAdded = DateTime.Now;
-                _context.Add(bookModel);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    bookModel.DateAdded = DateTime.Now;
+                    _context.Add(bookModel);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        $"Couldn't Create Book. USER:{_userManager.FindByNameAsync(User.Identity.Name).Result.Id}:{ex.Message}");
+                }
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -108,6 +123,7 @@ namespace ProductManagement.hasona23.Controllers
             var bookModel = await _context.Books.FindAsync(id);
             if (bookModel == null)
             {
+                _logger.LogWarning($"Could not find book ID: {id}");
                 return NotFound();
             }
 
@@ -120,10 +136,11 @@ namespace ProductManagement.hasona23.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = $"{Roles.Admin} , {Roles.Staff}")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price")] BookModel bookModel)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,DateAdded,IsActive")] BookModel bookModel)
         {
             if (id != bookModel.Id)
             {
+                _logger.LogWarning($"Could not find book ID: {id}");
                 return NotFound();
             }
 
@@ -134,15 +151,16 @@ namespace ProductManagement.hasona23.Controllers
                     _context.Update(bookModel);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception ex)
                 {
                     if (!BookModelExists(bookModel.Id))
                     {
+                        _logger.LogError($"Attempted to Update NON-EXISTING book {ex}");
                         return NotFound();
                     }
                     else
                     {
-                        throw;
+                        _logger.LogError($"Error Updating Book Model : {ex}");
                     }
                 }
 
@@ -165,6 +183,7 @@ namespace ProductManagement.hasona23.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (bookModel == null)
             {
+                _logger.LogWarning($"Could not find book ID: {id}");
                 return NotFound();
             }
 
@@ -180,10 +199,17 @@ namespace ProductManagement.hasona23.Controllers
             var bookModel = await _context.Books.FindAsync(id);
             if (bookModel != null)
             {
-                _context.Books.Remove(bookModel);
+                try
+                {
+                    _context.Books.Remove(bookModel);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Couldnt Delete BookID:{bookModel.Id} USER:{_userManager.FindByNameAsync(User.Identity.Name).Result.Id}  :{ex.Message}");
+                }
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -196,7 +222,7 @@ namespace ProductManagement.hasona23.Controllers
         {
             if (!_signInManager.IsSignedIn(User))
                 return false;
-            var user =  _userManager.FindByNameAsync(User.Identity.Name).Result;
+            var user = _userManager.FindByNameAsync(User.Identity.Name).Result;
             return _userManager.IsInRoleAsync(user, role).Result;
         }
     }
