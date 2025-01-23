@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ProductManagement.hasona23.Constants;
 using ProductManagement.hasona23.Data;
 using ProductManagement.hasona23.Services.Email;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,13 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 EmailConfig emailConfig = builder.Configuration.GetSection("EmailConfig").Get<EmailConfig>() ?? throw new InvalidOperationException("Email config section not found.");
 builder.Services.AddSingleton<EmailConfig>(emailConfig);
 
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    // Reads configuration settings for Serilog from the appsettings.json file or any other configuration source
+    // This enables setting options such as log levels, sinks, and output formats directly from configuration files.
+    configuration.ReadFrom.Configuration(context.Configuration);
+});
+
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
@@ -24,23 +32,25 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     options.SignIn.RequireConfirmedEmail = false;
 
 
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequiredLength = 8;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
 
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Lockout.AllowedForNewUsers = true;
 
 }).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
-
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
+
 });
 builder.Services.AddControllersWithViews();
+
+
 
 var app = builder.Build();
 
@@ -81,7 +91,6 @@ using (var scope = app.Services.CreateScope())
 }
 app.UseHttpsRedirection();
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapStaticAssets();
