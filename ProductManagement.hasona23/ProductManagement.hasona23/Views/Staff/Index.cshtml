@@ -7,12 +7,13 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Books</h1>
 
 <div class="dropdown">
-    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchCollapse"
-            aria-expanded="false" aria-controls="userSearchCollapse">
-        Search Users
+    <!--SEARCH USER BUTTON-->
+    <button class="btn btn-primary mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchCollapse"
+            aria-expanded="false" aria-controls="userSearchCollapse" title="Search Users">
+        <i class="fa-solid fa-magnifying-glass"></i>
     </button>
     <div class="collapse" id="userSearchCollapse">
         <div class="card card-body">
@@ -51,7 +52,7 @@
                 <a asp-action="Index" class="btn btn-secondary">Reset</a>
             </form>
         </div>
-        </div>
+    </div>
 </div>
 
 <table class="table">
@@ -93,16 +94,16 @@
                     <span>
                         @if (!UserManager.IsInRoleAsync(user, Roles.Staff).Result)
                         {
-                            <span><a class="btn btn-primary justify-content-center" style="min-width: 200px" asp-action="Promote" 
-                                      asp-route-id="@user.Id">Promote to Staff</a>|</span>
+                            <span><a class="btn btn-primary justify-content-center"  asp-action="Promote" 
+                                     asp-route-id="@user.Id" title="Promote to Staff"><i class="fa-solid fa-arrow-up"></i></a></span>
                         }
                         else
                         {
-                            <span> <a class="btn btn-warning justify-content-center" style="min-width: 200px" asp-action="Demote" 
-                                      asp-route-id="@user.Id">Demote to Customer</a>|</span>
+                            <span> <a class="btn btn-warning justify-content-center"  asp-action="Demote" 
+                                      asp-route-id="@user.Id" title="Demote to Customer"><i class="fa-solid fa-arrow-down"></i></a></span>
                         }
-                       
-                        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@user.Id">Delete</a>
+                       |
+                       <a class="btn btn-danger" asp-action="Delete" asp-route-id="@user.Id"><i class="fa-solid fa-trash"></i></a>
                     </span>
                 }
             </td>
@@ -117,8 +118,7 @@
                    asp-route-searchUserName="@(Model.SearchUserName)"
                    asp-route-searchEmail="@(Model.SearchEmail)"
                    asp-route-searchRole="@(Model.SearchRole)"
-                   asp-route-isEmailConfirmed="@(Model.IsEmailConfirmed)"
-                   >Previous</a>
+                   asp-route-isEmailConfirmed="@(Model.IsEmailConfirmed)">Previous</a>
             </li>
 
             @for (int i = 1; i <= Model.TotalPages; i++)

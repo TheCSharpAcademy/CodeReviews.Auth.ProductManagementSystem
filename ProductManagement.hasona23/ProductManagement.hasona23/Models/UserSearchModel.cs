@@ -37,13 +37,13 @@ public class UserSearchModel
 
         if (!string.IsNullOrEmpty(SearchUserName))
         {
-            users = users.Where(user => user.UserName != null && 
+            users = users.Where(user => user.UserName != null &&
                                         user.UserName.Contains(SearchUserName)).ToList();
         }
 
         if (!string.IsNullOrEmpty(SearchEmail))
         {
-            users = users.Where(user => user.Email != null && 
+            users = users.Where(user => user.Email != null &&
                                         user.Email.Contains(SearchEmail)).ToList();
         }
 

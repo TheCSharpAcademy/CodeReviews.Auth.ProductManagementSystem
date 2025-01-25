@@ -23,6 +23,15 @@ public class HomeController : Controller
         return View();
     }
 
+    public IActionResult AccessDenied()
+    {
+        if (User.Identity != null)
+        {
+            _logger.LogCritical($"Access Denied for {User.Identity.Name}");
+        }
+
+        return View();
+    }
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

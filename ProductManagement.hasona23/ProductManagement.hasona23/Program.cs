@@ -47,7 +47,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-
+    options.AccessDeniedPath = "/Home/AccessDenied";
+    options.LogoutPath = "/Home/";
 });
 builder.Services.AddControllersWithViews();
 

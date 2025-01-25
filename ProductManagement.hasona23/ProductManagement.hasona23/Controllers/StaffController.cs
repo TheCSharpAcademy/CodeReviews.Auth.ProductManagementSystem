@@ -78,6 +78,7 @@ namespace ProductManagement.hasona23.Controllers
                     return View("Error"); // Optionally, show an error view.
                 }
 
+                await _userManager.RemoveFromRoleAsync(user, Roles.Customer);
             }
 
             return RedirectToAction(nameof(Index));
