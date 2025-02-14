@@ -1,0 +1,95 @@
+﻿@page "/Account/Manage"
+
+@inject ICurrentUserService CurrentUserService
+@inject ISenderService Sender
+
+<PageTitle>Manage Account</PageTitle>
+
+<section class="container-md py-3">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item active" aria-current="page">Account</li>
+            <li class="breadcrumb-item active" aria-current="page">Manage</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <PersonGearFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Manage Account</h1>
+    </div>
+
+    <StatusMessage Status="@status" />
+    @if (user is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <ChangeEmail User="@user"/>
+
+        <hr />
+
+        @if (hasPassword)
+        {
+            <ChangePassword User="@user" />
+
+        }
+        else
+        {
+            <SetPassword User="@user" />
+        }
+    }
+</section>
+
+@code {
+    private StatusModel status = StatusModel.None;
+    private ApplicationUserDto user = default!;
+    private bool hasPassword;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentUserId = CurrentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            status = new StatusModel("Unable to load user.", MessageLevel.Error);
+            return;
+        }
+
+        var userQuery = new GetUserByIdQuery(currentUserId);
+        var userResult = await Sender.SendAsync(userQuery);
+        if (userResult.IsFailure)
+        {
+            status = new StatusModel(userResult.Error.Message, MessageLevel.Error);
+            return;
+        }
+        
+        user = new ApplicationUserDto(userResult.Value.Id,
+                                      userResult.Value.Email,
+                                      userResult.Value.EmailConfirmed,
+                                      userResult.Value.Role);
+
+        var hasPasswordQuery = new HasPasswordQuery(user.Id);
+        var hasPasswordResult = await Sender.SendAsync(hasPasswordQuery);
+        if (hasPasswordResult.IsFailure)
+        {
+            status = new StatusModel(hasPasswordResult.Error.Message, MessageLevel.Error);
+            return;
+        }
+
+        hasPassword = hasPasswordResult.Value.HasPassword;
+
+        var messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusMessageCookieName];
+        var levelFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusLevelCookieName];
+        if (!string.IsNullOrWhiteSpace(messageFromCookie) && !string.IsNullOrWhiteSpace(levelFromCookie))
+        {
+            status = new StatusModel(messageFromCookie, Enum.Parse<MessageLevel>(levelFromCookie));
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusMessageCookieName);
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusLevelCookieName);
+            return;
+        }
+    }
+}

@@ -1,0 +1,261 @@
+﻿@page "/users"
+
+@inject ISenderService Sender
+@inject IToastService ToastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Users</PageTitle>
+
+<div class="container-md py-3">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item active" aria-current="page">Users</li>
+            <li class="breadcrumb-item active" aria-current="page">List</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+            <PeopleFillSvg Height="1.5rem" Width="1.5rem" />
+            <h1 class="h2 mb-0">Users</h1>
+        </div>
+        <button class="btn btn-lg btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchForm" aria-expanded="false" aria-controls="userSearchForm">
+            <div class="d-flex align-items-center justify-content-center">
+                <SearchSvg />
+            </div>
+        </button>
+    </div>
+
+    <div id="userSearchForm" class="collapse pb-3">
+        <EditForm Model="Input" OnValidSubmit="() => LoadUsersPageAsync()" FormName="SearchUsers">
+            <div class="row">
+                <div class="col-12 col-lg-6">
+                    <div class="form-floating mb-3">
+                        <InputText id="Input.SearchEmail" class="form-control" placeholder="name@example.com" @bind-Value="Input.SearchEmail" />
+                        <label for="Input.SearchEmail" class="form-label">Email</label>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <FixedInputSelect id="Input.SearchEmailConfirmed" class="form-select" @bind-Value="Input.SearchEmailConfirmed">
+                            <option value="">All</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </FixedInputSelect>
+                        <label for="Input.SearchEmailConfirmed">Email Confirmed</label>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <FixedInputSelect id="Input.SearchRole" class="form-select" @bind-Value="Input.SearchRole">
+                            <option value="">All</option>
+                            <option value="Owner">Owner</option>
+                            <option value="Admin">Admin</option>
+                            <option value="User">User</option>
+                        </FixedInputSelect>
+                        <label for="Input.SearchRole">Role</label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="d-flex gap-1 mb-3">
+                <button class="btn btn-sm btn-outline-dark w-100" type="submit" data-bs-toggle="collapse" data-bs-target="#userSearchForm">Search</button>
+                <button class="btn btn-sm btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchForm" @onclick="ResetSearchUsersDto">Reset</button>
+            </div>
+        </EditForm>
+    </div>
+
+    @if (UsersPage is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" class="col-7 col-lg-7 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.Email))">
+                            <div class="d-flex gap-1 align-items-center justify-content-between">
+                                Email
+                                <DynamicComponent Type="GetSortIcon(nameof(GetUsersPaginatedQueryResponse.Email))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-2 col-lg-2 table-dark align-middle text-center sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.EmailConfirmed))">
+                            <div class="d-flex gap-1 align-items-center justify-content-between">
+                                Email Confirmed
+                                <DynamicComponent Type=" GetSortIcon(nameof(GetUsersPaginatedQueryResponse.EmailConfirmed))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-2 col-lg-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.Role))">
+                            <div class="d-flex gap-1 align-items-center justify-content-between">
+                                Role
+                                <DynamicComponent Type="GetSortIcon(nameof(GetUsersPaginatedQueryResponse.Role))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-1">
+                            <NavLink class="btn btn-sm btn-outline-dark w-100 h-100" href="users/add" aria-label="Add User" title="Add User">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <PersonAddSvg />
+                                </div>
+                            </NavLink>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in UsersPage.Items)
+                    {
+                        <tr title="@user.Email">
+                            <td>@user.Email</td>
+                            <td class="text-center">
+                                @if (user.EmailConfirmed)
+                                {
+                                    <CheckCircleSvg />
+                                }
+                                else
+                                {
+                                    <XCircleSvg />
+                                }
+                            </td>
+                            <td>@user.Role</td>
+                            <td scope="row">
+                                <div class="d-flex flex-column flex-md-row gap-1">
+                                    <NavLink class="btn btn-sm btn-outline-dark w-100" href=@($"users/edit/{@user.Id}") aria-label="Edit User" title="Edit User">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <PersonDashSvg />
+                                        </div>
+                                    </NavLink>
+                                    <NavLink class="btn btn-sm btn-outline-dark w-100" href=@($"users/delete/{@user.Id}") aria-label="Delete User" title="Delete User">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <PersonXSvg />
+                                        </div>
+                                    </NavLink>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="pagination flex-column-reverse align-items-center flex-md-row align-items-md-start justify-content-md-between">
+                <span class="small text-muted ms-md-2">
+                    Showing @(UsersPage.TotalCount) results
+                </span>
+                <nav aria-label="Select page">
+                    <ul class="pagination">
+                        <li class="page-item @(UsersPage.IsFirstPage ? "disabled" : "")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadUsersPageAsync(1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronDoubleLeftSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item @(UsersPage.HasPreviousPage ? "" : "disabled")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadUsersPageAsync(UsersPage.PageNumber - 1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronLeftSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item disabled">
+                            <button class="page-link h-100" type="button">@(UsersPage.PageNumber) of @(UsersPage.TotalPages)</button>
+                        </li>
+                        <li class="page-item @(UsersPage.HasNextPage ? "" : "disabled")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadUsersPageAsync(UsersPage.PageNumber + 1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronRightSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item @(UsersPage.IsLastPage ? "disabled" : "")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadUsersPageAsync(UsersPage.TotalPages))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronDoubleRightSvg />
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private SearchUsersInputModel Input { get; set; } = new();
+    private PaginatedList<GetUsersPaginatedQueryResponse>? UsersPage { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadUsersPageAsync();
+        }
+    }
+
+    private async Task LoadUsersPageAsync(int pageNumber = 1)
+    {
+        if (string.IsNullOrWhiteSpace(Input.SortColumn))
+        {
+            Input.SortColumn = nameof(GetUsersPaginatedQueryResponse.Email);
+        }
+        if (string.IsNullOrWhiteSpace(Input.SortOrder))
+        {
+            Input.SortOrder = "asc";
+        }
+
+        var query = new GetUsersPaginatedQuery(Input.SearchEmail,
+                                               Input.SearchEmailConfirmed,
+                                               Input.SearchRole,
+                                               Input.SortColumn,
+                                               Input.SortOrder,
+                                               pageNumber);
+
+        var response = await Sender.SendAsync(query);
+        if (response.IsSuccess)
+        {
+            UsersPage = response.Value;
+        }
+        else
+        {
+            UsersPage = PaginatedList<GetUsersPaginatedQueryResponse>.Create([], 0, 1, 1);
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Type GetSortIcon(string columnName)
+    {
+        if (Input.SortColumn == columnName)
+        {
+            if (Input.SortOrder == "desc")
+            {
+                return typeof(SortDownSvg);
+            }
+            else
+            {
+                return typeof(SortUpSvg);
+            }
+        }
+        else
+        {
+            return typeof(SortSvg);
+        }
+    }
+
+    private async Task ResetSearchUsersDto()
+    {
+        Input = new();
+        await LoadUsersPageAsync();
+    }
+
+    private async Task SortTable(string columnName)
+    {
+        Input.SortColumn = columnName;
+        Input.SortOrder = Input.SortOrder == "asc" ? "desc" : "asc";
+        await LoadUsersPageAsync();
+    }
+}

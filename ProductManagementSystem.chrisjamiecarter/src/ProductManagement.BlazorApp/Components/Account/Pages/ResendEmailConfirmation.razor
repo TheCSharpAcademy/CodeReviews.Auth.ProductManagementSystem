@@ -1,0 +1,63 @@
+﻿@page "/Account/ResendEmailConfirmation"
+
+@inject ISenderService Sender
+
+<PageTitle>Resend email confirmation</PageTitle>
+
+<section class="d-flex w-100 h-100 p-3 mx-auto flex-column align-items-center">
+    <div class="mt-auto mb-auto w-100 px-3">
+        <div class="row d-flex flex-md-row-reverse justify-content-center align-items-center h-100 gap-2">
+            <div class="col-md-9 col-lg-6 col-xl-5 offset-xl-1 d-flex justify-content-center">
+                <img src="/img/product-management-system-logo-with-text.png" class="img-fluid p-5 overflow-hidden rounded-circle" alt="Application logo" />
+            </div>
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <h1 class="h3 mb-3 fw-normal">Please enter your email</h1>
+                <StatusMessage Status="@status" />
+                <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="ResendEmailConfirmationAsync" OnInvalidSubmit="ShowValidation" method="post" data-loading-button>
+                    <DataAnnotationsValidator />
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Email" id="Input.Email" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Email), showValidation)}") aria-required="true" placeholder="name@example.com" />
+                        <label for="Input.Email" class="form-label">Email</label>
+                        <ValidationMessage For="() => Input.Email" class="invalid-feedback" />
+                    </div>
+                    <button type="submit" class="btn btn-dark btn-lg w-100 px-3">Resend confirmation</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private bool showValidation = false;
+    private StatusModel status = StatusModel.None;
+
+    [SupplyParameterFromForm]
+    private ResendEmailConfirmationInputModel Input { get; set; } = new();
+
+    private async Task ResendEmailConfirmationAsync()
+    {
+        showValidation = false;
+        status = new StatusModel(null, null);
+
+        if (Input.Email is null)
+        {
+            status = new StatusModel("The Email field is required.", MessageLevel.Error);
+            return;
+        }
+
+        var command = new RequestEmailConfirmationCommand(Input.Email);
+        var result = await Sender.SendAsync(command);
+        if (result.IsFailure)
+        {
+            status = new StatusModel(result.Error.Message, MessageLevel.Error);
+            return;
+        }
+     
+        status = new StatusModel("Verification email sent. Please check your email.", MessageLevel.Success);
+    }
+
+    private void ShowValidation()
+    {
+        showValidation = true;
+    }
+}
