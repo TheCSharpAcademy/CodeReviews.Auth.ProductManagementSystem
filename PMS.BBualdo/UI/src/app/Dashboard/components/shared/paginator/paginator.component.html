@@ -1,7 +1,0 @@
-<div class="flex items-center justify-end">
-  <div class="flex items-center gap-4">
-    <button [disabled]="currentPage === 1" (click)="prev()" class="btn primary-btn">Prev</button>
-    <p class="text-lg font-bold">{{ currentPage }} of {{totalPages}}</p>
-    <button [disabled]="currentPage === totalPages" (click)="next()" class="btn primary-btn">Next</button>
-  </div>
-</div>
