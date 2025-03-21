@@ -1,0 +1,133 @@
+﻿@page "/products/edit/{Id:guid}"
+
+@inject ISenderService Sender
+@inject IToastService ToastService
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<PageTitle>Edit Product</PageTitle>
+
+<div class="container-md py-3">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><NavLink class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover" href="products">Products</NavLink></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <CartDashFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Edit Product</h1>
+    </div>
+
+    @if (Input is null || EditContext is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="form-group col-md-8 col-lg-6 col-xl-5">
+            <EditForm EditContext="EditContext" FormName="EditProduct" OnValidSubmit="EditProductAsync">
+                <DataAnnotationsValidator />
+                <div class="form-floating mb-3">
+                    <InputText id="Input.Name" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Name)}") placeholder="name" @bind-Value="Input.Name" />
+                    <label for="Input.Name" class="form-label">Name</label>
+                    <ValidationMessage For="() => Input.Name" class="invalid-feedback" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputTextArea id="Input.Description" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Description)}") @bind-Value="Input.Description" />
+                    <label for="Input.Description" class="form-label">Description</label>
+                    <ValidationMessage For="() => Input.Description" class="invalid-feedback" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputNumber id="Input.Price" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Price)}") placeholder="name" @bind-Value="Input.Price" />
+                    <label for="Input.Price" class="form-label">Price</label>
+                    <ValidationMessage For="() => Input.Price" class="invalid-feedback" />
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <InputCheckbox id="Input.IsActive" class=@($"form-check-input {EditContext?.GetValidationClass(() => Input.IsActive)}") @bind-Value="Input.IsActive" />
+                    <label for="Input.IsActive" class="form-check-label">Is Active</label>
+                    <ValidationMessage For="() => Input.IsActive" class="invalid-feedback" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputDate id="Input.AddedOnUtc" class="form-control" placeholder="name" disabled readonly @bind-Value="Input.AddedOnUtc" />
+                    <label for="Input.AddedOnUtc" class="form-label">Added On</label>
+                </div>
+                <div class="d-flex gap-1">
+                    <LoadingButton Type="submit" IsProcessing="@isProcessing" CssClass="btn btn-outline-dark w-100">
+                        Update
+                    </LoadingButton>
+                    <NavLink class="btn btn-dark w-100" href="products" aria-label="Back to Products" title="Back to Products">
+                        Back
+                    </NavLink>
+                </div>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private EditContext? EditContext { get; set; }
+    private UpdateProductInputModel? Input { get; set; }
+    
+    private bool isProcessing = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadProductAsync();
+        }
+    }
+
+    private async Task LoadProductAsync()
+    {
+        var query = new GetProductByIdQuery(Id);
+
+        var response = await Sender.SendAsync(query);
+        if (response.IsSuccess)
+        {
+            Input = new UpdateProductInputModel(response.Value);
+            EditContext = new EditContext(Input);
+        }
+        else
+        {
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task EditProductAsync()
+    {
+        if (Input is null)
+        {
+            return;
+        }
+
+        isProcessing = true;
+
+        var command = new UpdateProductCommand(Input.Id,
+                                               Input.Name,
+                                               Input.Description,
+                                               Input.IsActive,
+                                               Input.Price);
+
+        var response = await Sender.SendAsync(command);
+        if (response.IsSuccess)
+        {
+            ToastService.ShowToast("Product updated", ToastLevel.Success);
+            NavigationManager.NavigateTo("products");
+        }
+        else
+        {
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+
+        isProcessing = false;
+    }
+}

@@ -1,0 +1,281 @@
+﻿@page "/products"
+
+@inject ISenderService Sender
+@inject IToastService ToastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Products</PageTitle>
+
+<div class="container-md py-3">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item active" aria-current="page">Products</li>
+            <li class="breadcrumb-item active" aria-current="page">List</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+            <CartFillSvg Height="1.5rem" Width="1.5rem" />
+            <h1 class="h2 mb-0">Products</h1>
+        </div>
+        <button class="btn btn-lg btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#productSearchForm" aria-expanded="false" aria-controls="productSearchForm">
+            <div class="d-flex align-items-center justify-content-center">
+                <SearchSvg />
+            </div>
+        </button>
+    </div>
+
+    <div id="productSearchForm" class="collapse pb-3">
+        <EditForm Model="Input" OnValidSubmit="() => LoadProductsPageAsync()" FormName="SearchProducts">
+            <div class="row">
+                <div class="col-8 col-lg-10">
+                    <div class="form-floating mb-3">
+                        <InputText id="Input.SearchName" class="form-control" placeholder="name" @bind-Value="Input.SearchName" />
+                        <label for="Input.SearchName" class="form-label">Name</label>
+                    </div>
+                </div>
+                <div class="col-4 col-lg-2">
+                    <div class="form-floating mb-3">
+                        <FixedInputSelect id="Input.SearchIsActive" class="form-select" @bind-Value="Input.SearchIsActive">
+                            <option value="">All</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </FixedInputSelect>
+                        <label for="Input.SearchIsActive">Active</label>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <InputDate id="Input.SearchFromAddedOnDateUtc" class="form-control" @bind-Value="Input.SearchFromAddedOnDateUtc" />
+                        <label for="Input.SearchFromAddedOnDateUtc">Added From</label>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <InputDate id="Input.SearchToAddedOnDateUtc" class="form-control" @bind-Value="Input.SearchToAddedOnDateUtc" />
+                        <label for="Input.SearchToAddedOnDateUtc">Added To</label>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <InputNumber id="Input.SearchFromPrice" class="form-control" @bind-Value="Input.SearchFromPrice" />
+                        <label for="Input.SearchFromPrice">Price From</label>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <InputNumber id="Input.SearchToPrice" class="form-control" @bind-Value="Input.SearchToPrice" />
+                        <label for="Input.SearchToPrice">Price To</label>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-1 mb-3">
+                <button class="btn btn-sm btn-outline-dark w-100" type="submit" data-bs-toggle="collapse" data-bs-target="#productSearchForm">Search</button>
+                <button class="btn btn-sm btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#productSearchForm" @onclick="ResetSearchProductsDto">Reset</button>
+            </div>
+        </EditForm>
+    </div>
+
+    @if (ProductsPage is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" class="col-6 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetProductsPaginatedQueryResponse.Name))">
+                            <div class="d-flex align-items-center justify-content-between">
+                                Name
+                                <DynamicComponent Type="GetSortIcon(nameof(GetProductsPaginatedQueryResponse.Name))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetProductsPaginatedQueryResponse.AddedOnUtc))">
+                            <div class="d-flex align-items-center justify-content-between">
+                                Added
+                                <DynamicComponent Type="GetSortIcon(nameof(GetProductsPaginatedQueryResponse.AddedOnUtc))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetProductsPaginatedQueryResponse.Price))">
+                            <div class="d-flex align-items-center justify-content-between">
+                                Price
+                                <DynamicComponent Type="GetSortIcon(nameof(GetProductsPaginatedQueryResponse.Price))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-1 table-dark align-middle text-center">
+                            Active
+                        </th>
+                        <th scope="col" class="col-1">
+                            <NavLink class="btn btn-sm btn-outline-dark w-100 h-100" href="products/add" aria-label="Add Product" title="Add Product">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <CartPlusSvg />
+                                </div>
+                            </NavLink>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in ProductsPage.Items)
+                    {
+                        <tr title="@product.Description">
+                            <td>@product.Name</td>
+                            <td>@product.AddedOnUtc</td>
+                            <td>@product.Price</td>
+                            <td class="text-center">
+                                @if (@product.IsActive)
+                                {
+                                    <CheckCircleSvg />
+                                }
+                                else
+                                {
+                                    <XCircleSvg />
+                                }
+                            </td>
+                            <td scope="row">
+                                <div class="d-flex flex-column flex-md-row gap-1">
+                                    <NavLink class="btn btn-sm btn-outline-dark w-100" href=@($"products/edit/{@product.Id}") aria-label="Edit Product" title="Edit Product">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <CartDashSvg />
+                                        </div>
+                                    </NavLink>
+                                    <NavLink class="btn btn-sm btn-outline-dark w-100" href=@($"products/delete/{@product.Id}") aria-label="Delete Product" title="Delete Product">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <CartXSvg />
+                                        </div>
+                                    </NavLink>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="pagination flex-column-reverse align-items-center flex-md-row align-items-md-start justify-content-md-between">
+                <span class="small text-muted ms-md-2">
+                    Showing @(ProductsPage.TotalCount) results
+                </span>
+                <nav aria-label="Select page">
+                    <ul class="pagination">
+                        <li class="page-item @(ProductsPage.IsFirstPage ? "disabled" : "")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadProductsPageAsync(1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronDoubleLeftSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item @(ProductsPage.HasPreviousPage ? "" : "disabled")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadProductsPageAsync(ProductsPage.PageNumber - 1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronLeftSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item disabled">
+                            <button class="page-link h-100" type="button">@(ProductsPage.PageNumber) of @(ProductsPage.TotalPages)</button>
+                        </li>
+                        <li class="page-item @(ProductsPage.HasNextPage ? "" : "disabled")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadProductsPageAsync(ProductsPage.PageNumber + 1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronRightSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item @(ProductsPage.IsLastPage ? "disabled" : "")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadProductsPageAsync(ProductsPage.TotalPages))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronDoubleRightSvg />
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private SearchProductsInputModel Input { get; set; } = new();
+    private PaginatedList<GetProductsPaginatedQueryResponse>? ProductsPage { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadProductsPageAsync();
+        }
+    }
+
+    private async Task LoadProductsPageAsync(int pageNumber = 1)
+    {
+        if (string.IsNullOrWhiteSpace(Input.SortColumn))
+        {
+            Input.SortColumn = nameof(GetProductsPaginatedQueryResponse.Name);
+        }
+
+        if (string.IsNullOrWhiteSpace(Input.SortOrder))
+        {
+            Input.SortOrder = "asc";
+        }
+
+        var query = new GetProductsPaginatedQuery(Input.SearchName,
+                                                  Input.SearchIsActive,
+                                                  Input.SearchFromAddedOnDateUtc,
+                                                  Input.SearchToAddedOnDateUtc,
+                                                  Input.SearchFromPrice,
+                                                  Input.SearchToPrice,
+                                                  Input.SortColumn,
+                                                  Input.SortOrder,
+                                                  pageNumber);
+
+        var response = await Sender.SendAsync(query);
+        if (response.IsSuccess)
+        {
+            ProductsPage = response.Value;
+        }
+        else
+        {
+            ProductsPage = PaginatedList<GetProductsPaginatedQueryResponse>.Create([], 0, query.PageNumber, query.PageSize);
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Type GetSortIcon(string columnName)
+    {
+        if (Input.SortColumn == columnName)
+        {
+            if (Input.SortOrder == "desc")
+            {
+                return typeof(SortDownSvg);
+            }
+            else
+            {
+                return typeof(SortUpSvg);
+            }
+        }
+        else
+        {
+            return typeof(SortSvg);
+        }
+    }
+
+    private async Task ResetSearchProductsDto()
+    {
+        Input = new();
+        await LoadProductsPageAsync();
+    }
+
+    private async Task SortTable(string columnName)
+    {
+        Input.SortColumn = columnName;
+        Input.SortOrder = Input.SortOrder == "asc" ? "desc" : "asc";
+        await LoadProductsPageAsync();
+    }
+}

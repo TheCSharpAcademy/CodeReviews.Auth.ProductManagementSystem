@@ -1,0 +1,141 @@
+﻿@page "/products/delete/{Id:guid}"
+
+@inject ISenderService Sender
+@inject IToastService ToastService
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<PageTitle>Delete Product</PageTitle>
+
+<div class="container-md py-3">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><NavLink class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover" href="products">Products</NavLink></li>
+            <li class="breadcrumb-item active" aria-current="page">Delete</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <CartXFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Delete Product</h1>
+    </div>
+
+    @if (Input is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="form-group col-md-8 col-lg-6 col-xl-5">
+            <EditForm Model="Input" FormName="DeleteProduct" OnValidSubmit="ShowConfirmation">
+                <div class="form-floating mb-3">
+                    <InputText id="Input.Name" class="form-control" placeholder="name" disabled readonly @bind-Value="Input.Name" />
+                    <label for="Input.Name" class="form-label">Name</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <InputTextArea id="Input.Description" class="form-control" placeholder="description" disabled readonly @bind-Value="Input.Description" />
+                    <label for="Input.Description" class="form-label">Description</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <InputNumber id="Input.Price" class="form-control" placeholder="name" disabled readonly @bind-Value="Input.Price" />
+                    <label for="Input.Price" class="form-label">Price</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <InputCheckbox id="Input.IsActive" class="form-check-input" disabled readonly @bind-Value="Input.IsActive" />
+                    <label for="Input.IsActive" class="form-check-label">Is Active</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <InputDate id="Input.AddedOnUtc" class="form-control" placeholder="name" disabled readonly @bind-Value="Input.AddedOnUtc" />
+                    <label for="Input.AddedOnUtc" class="form-label">Added On</label>
+                </div>
+                <div class="d-flex gap-1">
+                    <LoadingButton Type="submit" IsProcessing="@isProcessing" CssClass="btn btn-outline-dark w-100">
+                        Delete
+                    </LoadingButton>
+                    <NavLink class="btn btn-dark w-100" href="products" aria-label="Back to Products" title="Back to Products">
+                        Back
+                    </NavLink>
+                </div>
+            </EditForm>
+        </div>
+
+        @if (showConfirmationModal)
+        {
+            <ConfirmationModal Title="Delete this product?"
+                               Message="Do you really want to delete this product? This action cannot be undone."
+                               OnCancelCallback="HideConfirmation"
+                               OnConfirmCallback="DeleteProductAsync" />
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private DeleteProductinputModel? Input { get; set; }
+
+    private bool isProcessing = false;
+    private bool showConfirmationModal = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadProductAsync();
+        }
+    }
+
+    private async Task LoadProductAsync()
+    {
+        var query = new GetProductByIdQuery(Id);
+
+        var response = await Sender.SendAsync(query);
+        if (response.IsSuccess)
+        {
+            Input = new DeleteProductinputModel(response.Value);
+        }
+        else
+        {
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task DeleteProductAsync()
+    {
+        if (Input is null)
+        {
+            return;
+        }
+
+        isProcessing = true;
+
+        var command = new DeleteProductCommand(Input.Id);
+
+        var response = await Sender.SendAsync(command);
+        if (response.IsSuccess)
+        {
+            ToastService.ShowToast("Product deleted", ToastLevel.Success);
+            NavigationManager.NavigateTo("products");
+        }
+        else
+        {
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+
+        isProcessing = false;
+    }
+
+    private void ShowConfirmation()
+    {
+        showConfirmationModal = true;
+    }
+
+    private void HideConfirmation()
+    {
+        showConfirmationModal = false;
+    }
+}

@@ -1,0 +1,236 @@
+﻿@implements IDisposable
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+
+<Header />
+<Toast />
+<div class="container-fluid d-md-flex flex-md-grow-1">
+    <div class="row flex-md-grow-1">
+        <div class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
+            <div class="offcanvas-md offcanvas-end bg-body-tertiary hide" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="sidebarMenuLabel">Product Management System</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body d-md-flex flex-column p-0 pt-md-3 overflow-y-auto">
+                    <AuthorizeView Context="Home">
+                        <Authorized>
+                            <ul class="nav flex-column">
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
+                                        @if (currentPage is AppPages.Home)
+                                        {
+                                            <HouseFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <HouseSvg />
+                                        }
+                                        Home
+                                    </NavLink>
+                                </li>
+
+                                <AuthorizeView Context="Products" Roles="Owner,User">
+                                    <Authorized>
+                                        <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                            <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="products">
+                                                @if (currentPage is AppPages.Products)
+                                                {
+                                                    <CartFillSvg />
+                                                }
+                                                else
+                                                {
+                                                    <CartSvg />
+                                                }
+                                                Products
+                                            </NavLink>
+                                        </li>
+                                    </Authorized>
+                                </AuthorizeView>
+                                <AuthorizeView Context="Users" Roles="Owner,Admin">
+                                    <Authorized>
+                                        <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                            <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="users">
+                                                @if (currentPage is AppPages.Users)
+                                                {
+                                                    <PeopleFillSvg />
+                                                }
+                                                else
+                                                {
+                                                    <PeopleSvg />
+                                                }
+                                                Users
+                                            </NavLink>
+                                        </li>
+                                    </Authorized>
+                                </AuthorizeView>
+                            </ul>
+
+                            <hr class="my-3">
+
+                        </Authorized>
+                    </AuthorizeView>
+
+                    <ul class="nav flex-column mb-auto">
+                        <AuthorizeView Context="Account">
+                            <Authorized>
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Manage" data-enhance-nav="false">
+                                        @if (currentPage is AppPages.Manage)
+                                        {
+                                            <PersonGearFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <PersonGearSvg />
+                                        }
+                                        Account
+                                    </NavLink>
+                                </li>
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                    <form action="Account/Logout" method="post">
+                                        <AntiforgeryToken />
+                                        <input type="hidden" name="ReturnUrl" value="" />
+                                        <button type="submit" class="nav-link link-dark d-flex align-items-center gap-2">
+                                            <DoorClosedSvg />
+                                            Sign out
+                                        </button>
+                                    </form>
+                                </li>
+                            </Authorized>
+                            <NotAuthorized>
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Register" data-enhance-nav="false">
+                                        @if (currentPage is AppPages.Register)
+                                        {
+                                            <PersonFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <PersonSvg />
+                                        }
+                                        Register
+                                    </NavLink>
+                                </li>
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Signin" data-enhance-nav="false">
+                                        @if (currentPage is AppPages.Signin)
+                                        {
+                                            <PersonBadgeFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <PersonBadgeSvg />
+                                        }
+                                        Sign in
+                                    </NavLink>
+                                </li>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10">
+
+            @Body
+
+        </main>
+    </div>
+</div>
+<script>
+    // NOTE: 
+    // Account pages must use Static Server-Side Rendering. And I want to use JS to disable buttons and add a spinner when clicked.
+    // TO USE: 
+    // - Mark a Form with "data-loading-button".
+    // - Ensure that when you navigate to the page, a full page load is done so JS is invoked (i.e. when using NavLink add attribute: data-enhance-nav="false").
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const forms = document.querySelectorAll('form[data-loading-button]');
+        forms.forEach(form => {
+            form.addEventListener('submit', (event) => {
+                try {
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    if (!submitButton) {
+                        return;
+                    }
+                    
+                    submitButton.disabled = true;
+                    requestAnimationFrame(() => {
+                        submitButton.innerHTML = `
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        `;
+                    });
+
+                } catch (error) {
+                    console.error("Error processing form submission:", error);
+                }
+            });
+        });
+    });
+</script>
+
+@code {
+    private enum AppPages
+    {
+        Unknown,
+        Home,
+        Products,
+        Users,
+        Signin,
+        Register,
+        Manage
+    }
+
+    private AppPages? currentPage;
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+        currentPage = GetCurrentPage();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentPage = GetCurrentPage();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private AppPages GetCurrentPage()
+    {
+        var currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+        var urlParts = currentUrl.Split("/").Select(x => x.Split("?").FirstOrDefault()?.ToLower()).ToArray();
+        if (!urlParts.Any())
+        {
+            return AppPages.Home;
+        }
+
+        if (urlParts.FirstOrDefault() == "account")
+        {
+            return urlParts.FirstOrDefault()?.ToLower() switch
+            {
+                "login" => AppPages.Signin,
+                "register" => AppPages.Register,
+                _ => AppPages.Manage,
+            };
+        }
+
+        return urlParts.FirstOrDefault()?.ToLower() switch
+        {
+            "products" => AppPages.Products,
+            "users" => AppPages.Users,
+            _ => AppPages.Home,
+        };
+    }
+}

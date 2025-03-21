@@ -1,0 +1,32 @@
+﻿@if (!string.IsNullOrEmpty(DisplayMessage))
+{
+    var statusMessageClass = GetStatusMessageCssClass(Level);
+    <div class="alert @(statusMessageClass)" role="alert">
+        @DisplayMessage
+    </div>
+}
+
+@code {
+    [Parameter]
+    public StatusModel Status { get; set; } = StatusModel.None;
+
+    private string? DisplayMessage => Status?.Message ?? string.Empty;
+
+    private MessageLevel Level => Status?.Level ?? MessageLevel.Primary;
+
+    private string GetStatusMessageCssClass(MessageLevel level)
+    {
+        return level switch
+        {
+            MessageLevel.Primary => "alert-primary",
+            MessageLevel.Secondary => "alert-secondary",
+            MessageLevel.Success => "alert-success",
+            MessageLevel.Error => "alert-danger",
+            MessageLevel.Warning => "alert-warning",
+            MessageLevel.Info => "alert-info",
+            MessageLevel.Light => "alert-light",
+            MessageLevel.Dark => "alert-dark",
+            _ => "alert-primary",
+        };
+    }
+}

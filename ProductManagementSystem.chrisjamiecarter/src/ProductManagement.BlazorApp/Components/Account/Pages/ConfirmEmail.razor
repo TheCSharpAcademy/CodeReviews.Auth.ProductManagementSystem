@@ -1,0 +1,48 @@
+﻿@page "/Account/ConfirmEmail"
+
+@inject ISenderService Sender
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Confirm email</PageTitle>
+
+<section class="container-md py-3">
+
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <PersonFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Confirm Email</h1>
+    </div>
+
+    <StatusMessage Status="@status" />
+
+</section>
+
+@code {
+    private StatusModel status = StatusModel.None;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? UserId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Code { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserId is null || Code is null)
+        {
+            RedirectManager.RedirectToWithStatus("Account/Signin", new StatusModel("Invalid email confirmation link.", MessageLevel.Error), HttpContext);
+        }
+
+        var token = AuthToken.Decode(Code);
+        var confirmCommand = new ConfirmEmailCommand(UserId, token);
+        var confirmResult = await Sender.SendAsync(confirmCommand);
+        if (confirmResult.IsFailure)
+        {
+            RedirectManager.RedirectToWithStatus("Account/Signin", new StatusModel("Error confirming your email.", MessageLevel.Error), HttpContext);
+        }
+
+        RedirectManager.RedirectToWithStatus("Account/Manage", new StatusModel("Thank you for confirming your email.", MessageLevel.Success), HttpContext);
+    }
+}
